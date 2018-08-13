@@ -1,11 +1,12 @@
 [package]
 name = "shared-bus"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Rahix <rahix@rahix.de>"]
 
 description = "Abstraction for sharing a bus between multiple devices."
 homepage = "https://github.com/Rahix/shared-bus"
 repository = "https://github.com/Rahix/shared-bus"
+documentation = "https://docs.rs/shared-bus"
 readme = "README.md"
 keywords = ["embedded-hal", "embedded-hal-impl", "i2c", "bus"]
 categories = ["embedded", "no-std"]

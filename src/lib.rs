@@ -35,6 +35,7 @@
 //! // implementations of the underlying peripheral
 //! let mut mydevice = MyDevice::new(manager.acquire());
 //! ```
+#![doc(html_root_url = "https://docs.rs/shared-bus")]
 #![cfg_attr(not(feature = "std"), no_std)]
 
 extern crate embedded_hal as hal;
