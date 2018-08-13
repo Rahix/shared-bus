@@ -1,10 +1,10 @@
-//! # shared_bus
+//! # shared-bus
 //!
-//! **shared_bus** is a crate to allow sharing bus peripherals
+//! **shared-bus** is a crate to allow sharing bus peripherals
 //! safely between multiple devices.
 //!
-//! To do so, **shared_bus** needs a mutex. Because each platform has its own
-//! mutex type, **shared_bus** uses an abstraction: [`BusMutex`]. This type
+//! To do so, **shared-bus** needs a mutex. Because each platform has its own
+//! mutex type, **shared-bus** uses an abstraction: [`BusMutex`]. This type
 //! needs to be implemented for your platforms mutex type to allow using this
 //! crate.
 //!
