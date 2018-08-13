@@ -23,6 +23,7 @@ use core::marker;
 ///
 /// # Examples
 /// ```
+/// # extern crate shared_bus;
 /// # use shared_bus::BusManager;
 /// # struct MyDevice;
 /// # impl MyDevice {
@@ -46,6 +47,7 @@ impl<M: mutex::BusMutex<cell::RefCell<T>>, T> BusManager<M, T> {
     ///
     /// When creating the manager you need to specify which mutex type should be used:
     /// ```
+    /// # extern crate shared_bus;
     /// # use shared_bus::BusManager;
     /// # let bus = ();
     /// let manager = BusManager::<std::sync::Mutex<_>, _>::new(bus);
