@@ -1,7 +1,15 @@
 [package]
-authors = ["Rahix <rahix@rahix.de>"]
 name = "shared-bus"
 version = "0.1.0"
+authors = ["Rahix <rahix@rahix.de>"]
+
+description = "Abstraction for sharing a bus between multiple devices."
+homepage = "https://github.com/Rahix/shared-bus"
+repository = "https://github.com/Rahix/shared-bus"
+readme = "README.md"
+keywords = ["embedded-hal", "embedded-hal-impl", "i2c", "bus"]
+categories = ["embedded", "no-std"]
+license = "MIT/Apache-2.0"
 
 [dependencies]
 embedded-hal = "0.2.1"
