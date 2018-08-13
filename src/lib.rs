@@ -40,3 +40,7 @@ pub mod proxy;
 pub use mutex::BusMutex;
 pub use proxy::BusManager;
 pub use proxy::BusProxy;
+
+/// Type alias for a bus manager using [`std::sync::Mutex`].
+#[cfg(feature = "std")]
+pub type StdBusManager<L, P> = BusManager<std::sync::Mutex<L>, P>;

@@ -17,7 +17,7 @@ fn fake_device() {
 fn manager() {
     let (mut device, transactions) = i2c_mock::FakeI2CDevice::new();
     device.write(0xc0, &[0xff, 0xee]).unwrap();
-    let _manager = shared_bus::BusManager::<std::sync::Mutex<_>, _>::new(device);
+    let _manager = shared_bus::StdBusManager::new(device);
 
     assert_eq!(*transactions.read().unwrap(), vec!["C0: FF EE"]);
 }
@@ -27,7 +27,7 @@ fn proxy() {
     let (mut device, transactions) = i2c_mock::FakeI2CDevice::new();
     device.write(0xc0, &[0xff, 0xee]).unwrap();
 
-    let manager = shared_bus::BusManager::<std::sync::Mutex<_>, _>::new(device);
+    let manager = shared_bus::StdBusManager::new(device);
     let mut proxy = manager.acquire();
 
     proxy.write(0xde, &[0xad, 0xbe, 0xef]).unwrap();
@@ -38,7 +38,7 @@ fn proxy() {
 #[test]
 fn multiple_proxies() {
     let (device, transactions) = i2c_mock::FakeI2CDevice::new();
-    let manager = shared_bus::BusManager::<std::sync::Mutex<_>, _>::new(device);
+    let manager = shared_bus::StdBusManager::new(device);
 
     let mut proxy1 = manager.acquire();
     let mut proxy2 = manager.acquire();
