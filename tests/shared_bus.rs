@@ -32,7 +32,10 @@ fn proxy() {
 
     proxy.write(0xde, &[0xad, 0xbe, 0xef]).unwrap();
 
-    assert_eq!(*transactions.read().unwrap(), vec!["C0: FF EE", "DE: AD BE EF"]);
+    assert_eq!(
+        *transactions.read().unwrap(),
+        vec!["C0: FF EE", "DE: AD BE EF"]
+    );
 }
 
 #[test]
@@ -47,9 +50,8 @@ fn multiple_proxies() {
     proxy2.write(0x0B, &[0x01, 0x23]).unwrap();
     proxy1.write(0x0A, &[0x00, 0xFF]).unwrap();
 
-    assert_eq!(*transactions.read().unwrap(), vec![
-        "0A: AB CD",
-        "0B: 01 23",
-        "0A: 00 FF",
-    ]);
+    assert_eq!(
+        *transactions.read().unwrap(),
+        vec!["0A: AB CD", "0B: 01 23", "0A: 00 FF"]
+    );
 }

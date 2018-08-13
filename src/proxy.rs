@@ -73,7 +73,8 @@ pub struct BusProxy<'a, M: 'a + mutex::BusMutex<cell::RefCell<T>>, T>(
     marker::PhantomData<T>
 );
 
-impl<'a, M: 'a + mutex::BusMutex<cell::RefCell<T>>, T: i2c::Write> i2c::Write for BusProxy<'a, M, T> {
+impl<'a, M: 'a + mutex::BusMutex<cell::RefCell<T>>, T: i2c::Write> i2c::Write
+    for BusProxy<'a, M, T> {
     type Error = T::Error;
 
     fn write(&mut self, addr: u8, bytes: &[u8]) -> Result<(), Self::Error> {
