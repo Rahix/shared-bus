@@ -1,14 +1,19 @@
 //! # shared_bus
 //!
-//! `shared_bus` is a crate to allow sharing bus peripherals
+//! **shared_bus** is a crate to allow sharing bus peripherals
 //! safely between multiple devices.
 //!
-//! To do so, `shared_bus` needs a mutex. Because each platform has its own
-//! mutex type, `shared_bus` uses an abstraction: [`BusMutex`]. This type
+//! To do so, **shared_bus** needs a mutex. Because each platform has its own
+//! mutex type, **shared_bus** uses an abstraction: [`BusMutex`]. This type
 //! needs to be implemented for your platforms mutex type to allow using this
 //! crate.
-//! If `std` is available, activate the `std` feature to enable the implementation
-//! of [`BusMutex`] for [`std::sync::Mutex`].
+//!
+//! * If `std` is available, activate the `std` feature to enable the implementation
+//!   of [`BusMutex`] for [`std::sync::Mutex`].
+//! * If you platform is based on `cortex-m`, you can activate the `cortexm` feature
+//!   to enable the implementation of [`BusMutex`] for [`cortex_m::interrupt::Mutex`]
+//! * If neither is the case, take a look at the documentation of [`BusMutex`] for hints
+//!   on how to implement it yourself.
 //!
 //! Typical usage of this crate might look like this:
 //! ```
