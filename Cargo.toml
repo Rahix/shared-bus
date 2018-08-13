@@ -3,8 +3,16 @@ authors = ["Rahix <rahix@rahix.de>"]
 name = "shared-bus"
 version = "0.1.0"
 
-[features]
-std = []
-
 [dependencies]
 embedded-hal = "0.2.1"
+
+[dependencies.cortex-m]
+optional = true
+version = "0.5.4"
+
+[features]
+std = []
+cortexm = ["cortex-m"]
+
+[package.metadata.docs.rs]
+all-features = true

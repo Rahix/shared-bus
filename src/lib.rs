@@ -33,6 +33,8 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 extern crate embedded_hal as hal;
+#[cfg(feature = "cortexm")]
+extern crate cortex_m;
 
 pub mod mutex;
 pub mod proxy;
@@ -42,5 +44,13 @@ pub use proxy::BusManager;
 pub use proxy::BusProxy;
 
 /// Type alias for a bus manager using [`std::sync::Mutex`].
+///
+/// Only available if the `std` feature is active.
 #[cfg(feature = "std")]
 pub type StdBusManager<L, P> = BusManager<std::sync::Mutex<L>, P>;
+
+/// Type alias for a bus manager using [`cortex_m::interrupt::Mutex`].
+///
+/// Only available if the `cortexm` feature is active.
+#[cfg(feature = "cortexm")]
+pub type CortexMBusManager<L, P> = BusManager<cortex_m::interrupt::Mutex<L>, P>;
