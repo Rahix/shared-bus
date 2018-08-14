@@ -37,6 +37,7 @@
 //! ```
 #![doc(html_root_url = "https://docs.rs/shared-bus")]
 #![cfg_attr(not(feature = "std"), no_std)]
+#![cfg_attr(feature = "docsrs", feature(extern_prelude))]
 
 extern crate embedded_hal as hal;
 #[cfg(feature = "cortexm")]

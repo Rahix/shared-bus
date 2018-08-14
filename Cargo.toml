@@ -1,6 +1,6 @@
 [package]
 name = "shared-bus"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Rahix <rahix@rahix.de>"]
 
 description = "Abstraction for sharing a bus between multiple devices."
@@ -21,6 +21,7 @@ version = "0.5.4"
 
 [features]
 std = []
+docsrs = []
 cortexm = ["cortex-m"]
 
 [package.metadata.docs.rs]
