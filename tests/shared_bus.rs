@@ -1,47 +1,82 @@
 extern crate embedded_hal as hal;
+extern crate embedded_hal_mock as hal_mock;
 extern crate shared_bus;
 
-mod i2c_mock;
-
 use hal::blocking::i2c::Write;
+use hal::blocking::spi::Write as SPIWrite;
+
+use hal_mock::i2c::{Mock as I2cMock, Transaction as I2cTransaction};
+use hal_mock::spi::{Mock as SpiMock, Transaction as SpiTransaction};
 
 #[test]
-fn fake_device() {
-    let (mut device, transactions) = i2c_mock::FakeI2CDevice::new();
+fn fake_i2c_device() {
+    let expect = vec![I2cTransaction::write(0xc0, vec![0xff, 0xee])];
+    let mut device = I2cMock::new(&expect);
     device.write(0xc0, &[0xff, 0xee]).unwrap();
-
-    assert_eq!(*transactions.read().unwrap(), vec!["C0: FF EE"]);
+    device.done()
 }
 
 #[test]
-fn manager() {
-    let (mut device, transactions) = i2c_mock::FakeI2CDevice::new();
-    device.write(0xc0, &[0xff, 0xee]).unwrap();
-    let _manager = shared_bus::StdBusManager::new(device);
-
-    assert_eq!(*transactions.read().unwrap(), vec!["C0: FF EE"]);
+fn fake_spi_device() {
+    let expect = vec![SpiTransaction::write(vec![0xff, 0xee])];
+    let mut device = SpiMock::new(&expect);
+    device.write(&[0xff, 0xee]).unwrap();
+    device.done()
 }
 
 #[test]
-fn proxy() {
-    let (mut device, transactions) = i2c_mock::FakeI2CDevice::new();
-    device.write(0xc0, &[0xff, 0xee]).unwrap();
+fn spi_manager() {
+    let expect = vec![];
+    let mut device = SpiMock::new(&expect);
+    let _manager = shared_bus::StdBusManager::new(device.clone());
+    device.done();
+}
 
-    let manager = shared_bus::StdBusManager::new(device);
+#[test]
+fn i2c_manager() {
+    let expect = vec![];
+    let mut device = I2cMock::new(&expect);
+    let _manager = shared_bus::StdBusManager::new(device.clone());
+    device.done();
+}
+
+#[test]
+fn i2c_proxy() {
+    let expect = vec![I2cTransaction::write(0xde, vec![0xad, 0xbe, 0xef])];
+    let mut device = I2cMock::new(&expect);
+
+    let manager = shared_bus::StdBusManager::new(device.clone());
     let mut proxy = manager.acquire();
 
     proxy.write(0xde, &[0xad, 0xbe, 0xef]).unwrap();
 
-    assert_eq!(
-        *transactions.read().unwrap(),
-        vec!["C0: FF EE", "DE: AD BE EF"]
-    );
+    device.done();
+}
+
+#[test]
+fn spi_proxy() {
+    let expect = vec![SpiTransaction::write(vec![0xde, 0xad, 0xbe, 0xef])];
+    let mut device = SpiMock::new(&expect);
+
+    let manager = shared_bus::StdBusManager::new(device.clone());
+    let mut proxy = manager.acquire();
+
+    proxy.write(&[0xde, 0xad, 0xbe, 0xef]).unwrap();
+
+    device.done();
 }
 
 #[test]
 fn multiple_proxies() {
-    let (device, transactions) = i2c_mock::FakeI2CDevice::new();
-    let manager = shared_bus::StdBusManager::new(device);
+    
+    let expect = vec![
+        I2cTransaction::write(0x0a, vec![0xab, 0xcd]),
+        I2cTransaction::write(0x0b, vec![0x01, 0x23]),
+        I2cTransaction::write(0x0a, vec![0x00, 0xff]),
+    ];
+    let mut device = I2cMock::new(&expect);
+
+    let manager = shared_bus::StdBusManager::new(device.clone());
 
     let mut proxy1 = manager.acquire();
     let mut proxy2 = manager.acquire();
@@ -50,8 +85,5 @@ fn multiple_proxies() {
     proxy2.write(0x0B, &[0x01, 0x23]).unwrap();
     proxy1.write(0x0A, &[0x00, 0xFF]).unwrap();
 
-    assert_eq!(
-        *transactions.read().unwrap(),
-        vec!["0A: AB CD", "0B: 01 23", "0A: 00 FF"]
-    );
+    device.done()
 }

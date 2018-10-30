@@ -1,4 +1,6 @@
 use hal::blocking::i2c;
+use hal::blocking::spi;
+
 use mutex;
 
 #[cfg(feature = "std")]
@@ -111,6 +113,30 @@ impl<'a, M: 'a + mutex::BusMutex<cell::RefCell<T>>, T: i2c::WriteRead> i2c::Writ
         self.0.lock(|lock| {
             let mut i = lock.borrow_mut();
             i.write_read(address, bytes, buffer)
+        })
+    }
+}
+
+impl<'a, M: 'a + mutex::BusMutex<cell::RefCell<T>>, T: spi::Transfer<u8>> spi::Transfer<u8>
+    for BusProxy<'a, M, T> {
+    type Error = T::Error;
+
+    fn transfer<'w>(&mut self, words: &'w mut [u8]) -> Result<&'w [u8], Self::Error> {
+        self.0.lock(move |lock| {
+            let mut i = lock.borrow_mut();
+            i.transfer(words)
+        })
+    }
+}
+
+impl<'a, M: 'a + mutex::BusMutex<cell::RefCell<T>>, T: spi::Write<u8>> spi::Write<u8>
+    for BusProxy<'a, M, T> {
+    type Error = T::Error;
+
+    fn write(&mut self, words: &[u8]) -> Result<(), Self::Error> {
+        self.0.lock(|lock| {
+            let mut i = lock.borrow_mut();
+            i.write(words)
         })
     }
 }
