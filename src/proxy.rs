@@ -77,10 +77,11 @@ pub struct BusProxy<'a, M: 'a + mutex::BusMutex<cell::RefCell<T>>, T>(
     marker::PhantomData<T>,
 );
 
-impl<'a, M: 'a + mutex::BusMutex<cell::RefCell<T>>, T: i2c::Write> i2c::Write
-    for BusProxy<'a, M, T>
+impl<'a, M, I2C: i2c::Write> i2c::Write for BusProxy<'a, M, I2C>
+where
+    M: 'a + mutex::BusMutex<cell::RefCell<I2C>>,
 {
-    type Error = T::Error;
+    type Error = I2C::Error;
 
     fn write(&mut self, addr: u8, bytes: &[u8]) -> Result<(), Self::Error> {
         self.0.lock(|lock| {
@@ -90,8 +91,11 @@ impl<'a, M: 'a + mutex::BusMutex<cell::RefCell<T>>, T: i2c::Write> i2c::Write
     }
 }
 
-impl<'a, M: 'a + mutex::BusMutex<cell::RefCell<T>>, T: i2c::Read> i2c::Read for BusProxy<'a, M, T> {
-    type Error = T::Error;
+impl<'a, M, I2C: i2c::Read> i2c::Read for BusProxy<'a, M, I2C>
+where
+    M: 'a + mutex::BusMutex<cell::RefCell<I2C>>,
+{
+    type Error = I2C::Error;
 
     fn read(&mut self, address: u8, buffer: &mut [u8]) -> Result<(), Self::Error> {
         self.0.lock(|lock| {
@@ -101,10 +105,11 @@ impl<'a, M: 'a + mutex::BusMutex<cell::RefCell<T>>, T: i2c::Read> i2c::Read for 
     }
 }
 
-impl<'a, M: 'a + mutex::BusMutex<cell::RefCell<T>>, T: i2c::WriteRead> i2c::WriteRead
-    for BusProxy<'a, M, T>
+impl<'a, M, I2C: i2c::WriteRead> i2c::WriteRead for BusProxy<'a, M, I2C>
+where
+    M: 'a + mutex::BusMutex<cell::RefCell<I2C>>,
 {
-    type Error = T::Error;
+    type Error = I2C::Error;
 
     fn write_read(
         &mut self,
@@ -119,10 +124,11 @@ impl<'a, M: 'a + mutex::BusMutex<cell::RefCell<T>>, T: i2c::WriteRead> i2c::Writ
     }
 }
 
-impl<'a, M: 'a + mutex::BusMutex<cell::RefCell<T>>, T: spi::Transfer<u8>> spi::Transfer<u8>
-    for BusProxy<'a, M, T>
+impl<'a, M, SPI: spi::Transfer<u8>> spi::Transfer<u8> for BusProxy<'a, M, SPI>
+where
+    M: 'a + mutex::BusMutex<cell::RefCell<SPI>>,
 {
-    type Error = T::Error;
+    type Error = SPI::Error;
 
     fn transfer<'w>(&mut self, words: &'w mut [u8]) -> Result<&'w [u8], Self::Error> {
         self.0.lock(move |lock| {
@@ -132,10 +138,11 @@ impl<'a, M: 'a + mutex::BusMutex<cell::RefCell<T>>, T: spi::Transfer<u8>> spi::T
     }
 }
 
-impl<'a, M: 'a + mutex::BusMutex<cell::RefCell<T>>, T: spi::Write<u8>> spi::Write<u8>
-    for BusProxy<'a, M, T>
+impl<'a, M, SPI: spi::Write<u8>> spi::Write<u8> for BusProxy<'a, M, SPI>
+where
+    M: 'a + mutex::BusMutex<cell::RefCell<SPI>>,
 {
-    type Error = T::Error;
+    type Error = SPI::Error;
 
     fn write(&mut self, words: &[u8]) -> Result<(), Self::Error> {
         self.0.lock(|lock| {
