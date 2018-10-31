@@ -68,7 +68,6 @@ fn spi_proxy() {
 
 #[test]
 fn multiple_proxies() {
-    
     let expect = vec![
         I2cTransaction::write(0x0a, vec![0xab, 0xcd]),
         I2cTransaction::write(0x0b, vec![0x01, 0x23]),

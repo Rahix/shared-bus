@@ -74,11 +74,12 @@ impl<M: mutex::BusMutex<cell::RefCell<T>>, T> BusManager<M, T> {
 /// `BusProxies` are created by calling [`BusManager::acquire`]
 pub struct BusProxy<'a, M: 'a + mutex::BusMutex<cell::RefCell<T>>, T>(
     &'a M,
-    marker::PhantomData<T>
+    marker::PhantomData<T>,
 );
 
 impl<'a, M: 'a + mutex::BusMutex<cell::RefCell<T>>, T: i2c::Write> i2c::Write
-    for BusProxy<'a, M, T> {
+    for BusProxy<'a, M, T>
+{
     type Error = T::Error;
 
     fn write(&mut self, addr: u8, bytes: &[u8]) -> Result<(), Self::Error> {
@@ -101,7 +102,8 @@ impl<'a, M: 'a + mutex::BusMutex<cell::RefCell<T>>, T: i2c::Read> i2c::Read for 
 }
 
 impl<'a, M: 'a + mutex::BusMutex<cell::RefCell<T>>, T: i2c::WriteRead> i2c::WriteRead
-    for BusProxy<'a, M, T> {
+    for BusProxy<'a, M, T>
+{
     type Error = T::Error;
 
     fn write_read(
@@ -118,7 +120,8 @@ impl<'a, M: 'a + mutex::BusMutex<cell::RefCell<T>>, T: i2c::WriteRead> i2c::Writ
 }
 
 impl<'a, M: 'a + mutex::BusMutex<cell::RefCell<T>>, T: spi::Transfer<u8>> spi::Transfer<u8>
-    for BusProxy<'a, M, T> {
+    for BusProxy<'a, M, T>
+{
     type Error = T::Error;
 
     fn transfer<'w>(&mut self, words: &'w mut [u8]) -> Result<&'w [u8], Self::Error> {
@@ -130,7 +133,8 @@ impl<'a, M: 'a + mutex::BusMutex<cell::RefCell<T>>, T: spi::Transfer<u8>> spi::T
 }
 
 impl<'a, M: 'a + mutex::BusMutex<cell::RefCell<T>>, T: spi::Write<u8>> spi::Write<u8>
-    for BusProxy<'a, M, T> {
+    for BusProxy<'a, M, T>
+{
     type Error = T::Error;
 
     fn write(&mut self, words: &[u8]) -> Result<(), Self::Error> {

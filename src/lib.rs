@@ -39,9 +39,9 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![cfg_attr(feature = "docsrs", feature(extern_prelude))]
 
-extern crate embedded_hal as hal;
 #[cfg(feature = "cortexm")]
 extern crate cortex_m;
+extern crate embedded_hal as hal;
 
 pub mod mutex;
 pub mod proxy;
