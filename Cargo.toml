@@ -2,6 +2,7 @@
 name = "shared-bus"
 version = "0.1.4"
 authors = ["Rahix <rahix@rahix.de>"]
+edition = "2018"
 
 description = "Abstraction for sharing a bus between multiple devices."
 homepage = "https://github.com/Rahix/shared-bus"
@@ -13,14 +14,14 @@ categories = ["embedded", "no-std"]
 license = "MIT/Apache-2.0"
 
 [dependencies]
-embedded-hal = "0.2.1"
+embedded-hal = "0.2.3"
 
 [dev-dependencies]
-embedded-hal-mock = "0.4.0"
+embedded-hal-mock = "0.7.0"
 
 [dependencies.cortex-m]
 optional = true
-version = "0.5.4"
+version = "0.6.0"
 
 [features]
 std = []
