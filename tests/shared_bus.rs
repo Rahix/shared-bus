@@ -1,6 +1,6 @@
-extern crate embedded_hal as hal;
-extern crate embedded_hal_mock as hal_mock;
-extern crate shared_bus;
+use embedded_hal as hal;
+use embedded_hal_mock as hal_mock;
+use shared_bus;
 
 use hal::blocking::i2c::Write;
 use hal::blocking::spi::Write as SPIWrite;

@@ -8,8 +8,8 @@
 /// If there is no feature available for your Mutex type, you have to write one yourself. It should
 /// look something like this (for [`cortex_m`] as an example):
 /// ```
-/// # extern crate shared_bus;
-/// extern crate cortex_m;
+/// use shared_bus;
+/// use cortex_m;
 ///
 /// // You need a newtype because you can't implement foreign traits on
 /// // foreign types.
