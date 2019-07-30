@@ -1,7 +1,7 @@
 use hal::blocking::i2c;
 use hal::blocking::spi;
 
-use mutex;
+use super::*;
 
 #[cfg(feature = "std")]
 use std::cell;
@@ -25,7 +25,7 @@ use core::marker;
 ///
 /// # Examples
 /// ```
-/// # extern crate shared_bus;
+/// # use shared_bus;
 /// # use shared_bus::BusManager;
 /// # struct MyDevice;
 /// # impl MyDevice {

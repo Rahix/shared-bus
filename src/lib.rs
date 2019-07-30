@@ -40,8 +40,8 @@
 #![cfg_attr(feature = "docsrs", feature(extern_prelude))]
 
 #[cfg(feature = "cortexm")]
-extern crate cortex_m;
-extern crate embedded_hal as hal;
+use cortex_m;
+use embedded_hal as hal;
 
 pub mod mutex;
 pub mod proxy;
