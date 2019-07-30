@@ -1,7 +1,10 @@
 use hal::blocking::i2c;
 use hal::blocking::spi;
+use hal::timer;
 
 use super::*;
+
+use void::Void;
 
 #[cfg(feature = "std")]
 use std::cell;
@@ -150,4 +153,33 @@ where
             i.write(words)
         })
     }
+}
+
+impl<'a, M, TMR: timer::CountDown + timer::Periodic> timer::CountDown for BusProxy<'a, M, TMR>
+where
+    M: 'a + mutex::BusMutex<cell::RefCell<TMR>>,
+{
+    type Time = TMR::Time;
+
+    fn start<T>(&mut self, count: T)
+    where
+        T: Into<Self::Time>,
+    {
+        self.0.lock(|lock| {
+            let mut i = lock.borrow_mut();
+            i.start(count)
+        })
+    }
+
+    fn wait(&mut self) -> nb::Result<(), Void> {
+        self.0.lock(|lock| {
+            let mut i = lock.borrow_mut();
+            i.wait()
+        })
+    }
+}
+
+impl<'a, M, TMR: timer::CountDown + timer::Periodic> timer::Periodic for BusProxy<'a, M, TMR> where
+    M: 'a + mutex::BusMutex<cell::RefCell<TMR>>
+{
 }

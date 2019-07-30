@@ -42,6 +42,8 @@
 #[cfg(feature = "cortexm")]
 use cortex_m;
 use embedded_hal as hal;
+use nb;
+use void;
 
 pub mod mutex;
 pub mod proxy;
