@@ -1,3 +1,4 @@
+use hal::adc::{Channel, OneShot};
 use hal::blocking::i2c;
 use hal::blocking::spi;
 
@@ -148,6 +149,22 @@ where
         self.0.lock(|lock| {
             let mut i = lock.borrow_mut();
             i.write(words)
+        })
+    }
+}
+
+impl<'a, M, ADC, WORD, PIN, AS: OneShot<ADC, WORD, PIN>> OneShot<ADC, WORD, PIN>
+    for BusProxy<'a, M, AS>
+where
+    PIN: Channel<ADC>,
+    M: 'a + mutex::BusMutex<cell::RefCell<AS>>,
+{
+    type Error = AS::Error;
+
+    fn read(&mut self, pin: &mut PIN) -> nb::Result<WORD, Self::Error> {
+        self.0.lock(|lock| {
+            let mut i = lock.borrow_mut();
+            i.read(pin)
         })
     }
 }
