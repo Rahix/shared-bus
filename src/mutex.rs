@@ -16,8 +16,8 @@
 /// struct MyMutex<T>(cortex_m::interrupt::Mutex<T>);
 ///
 /// impl<T> shared_bus::BusMutex<T> for MyMutex<T> {
-///     fn create(v: T) -> MyMutex<T> {
-///         MyMutex(cortex_m::interrupt::Mutex::new(v))
+///     fn create(v: T) -> Self {
+///         Self(cortex_m::interrupt::Mutex::new(v))
 ///     }
 ///
 ///     fn lock<R, F: FnOnce(&T) -> R>(&self, f: F) -> R {
