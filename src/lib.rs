@@ -47,8 +47,15 @@ pub mod mutex;
 pub mod proxy;
 
 pub use mutex::BusMutex;
+pub use mutex::NullMutex;
 pub use proxy::BusManager;
 pub use proxy::BusProxy;
+
+/// Type alias for a bus manager using the [`shared_bus::NullMutex`].
+///
+/// This bus manager can be used when all bus users are contained in a single execution context,
+/// i.e. no synchronization between different tasks/threads is needed.
+pub type SingleContextBusManager<L, P> = BusManager<NullMutex<L>, P>;
 
 /// Type alias for a bus manager using [`std::sync::Mutex`].
 ///

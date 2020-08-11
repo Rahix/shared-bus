@@ -38,6 +38,25 @@ pub trait BusMutex<T> {
     fn lock<R, F: FnOnce(&T) -> R>(&self, f: F) -> R;
 }
 
+/// A dummy mutex for bus-sharing in a single task.
+///
+/// This mutex type can be used when all bus users are contained in a single execution context.  In
+/// such a situation, no actual mutex is needed, because a RefCell alone is sufficient to ensuring
+/// only a single peripheral can access the bus at the same time.
+///
+/// To uphold safety, this type is `!Send` and `!Sync`.
+pub struct NullMutex<T>(T);
+
+impl<T> BusMutex<T> for NullMutex<T> {
+    fn create(v: T) -> Self {
+        NullMutex(v)
+    }
+
+    fn lock<R, F: FnOnce(&T) -> R>(&self, f: F) -> R {
+        f(&self.0)
+    }
+}
+
 #[cfg(feature = "std")]
 impl<T> BusMutex<T> for ::std::sync::Mutex<T> {
     fn create(v: T) -> Self {

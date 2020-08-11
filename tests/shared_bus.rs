@@ -86,3 +86,24 @@ fn multiple_proxies() {
 
     device.done()
 }
+
+#[test]
+fn null_manager() {
+    let expect = vec![
+        I2cTransaction::write(0x0a, vec![0xab, 0xcd]),
+        I2cTransaction::write(0x0b, vec![0x01, 0x23]),
+        I2cTransaction::write(0x0a, vec![0x00, 0xff]),
+    ];
+    let mut device = I2cMock::new(&expect);
+
+    let manager = shared_bus::SingleContextBusManager::new(device.clone());
+
+    let mut proxy1 = manager.acquire();
+    let mut proxy2 = manager.acquire();
+
+    proxy1.write(0x0A, &[0xab, 0xcd]).unwrap();
+    proxy2.write(0x0B, &[0x01, 0x23]).unwrap();
+    proxy1.write(0x0A, &[0x00, 0xFF]).unwrap();
+
+    device.done()
+}
