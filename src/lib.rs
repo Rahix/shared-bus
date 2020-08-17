@@ -1,12 +1,17 @@
 #![doc(html_root_url = "https://docs.rs/shared-bus")]
 #![cfg_attr(not(feature = "std"), no_std)]
 
-mod mutex;
 mod manager;
+mod mutex;
 mod proxies;
+mod macros;
 
-pub use mutex::BusMutex;
+#[doc(hidden)]
+#[cfg(feature = "std")]
+pub use once_cell;
+
 pub use manager::BusManager;
+pub use mutex::BusMutex;
 pub use proxies::I2cProxy;
 
 #[cfg(feature = "std")]

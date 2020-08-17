@@ -1,5 +1,6 @@
-use embedded_hal_mock::i2c;
 use embedded_hal::prelude::*;
+use embedded_hal_mock::i2c;
+use std::thread;
 
 #[test]
 fn fake_i2c_device() {
@@ -10,10 +11,31 @@ fn fake_i2c_device() {
 }
 
 #[test]
-fn i2c_manager() {
-    let expect = vec![];
+fn i2c_manager_manual() {
+    let expect = vec![
+        i2c::Transaction::write(0xde, vec![0xad, 0xbe, 0xef]),
+    ];
     let mut device = i2c::Mock::new(&expect);
-    let _manager = shared_bus::BusManagerStd::new(device.clone());
+    let manager = shared_bus::BusManagerStd::new(device.clone());
+    let mut proxy = manager.acquire_i2c();
+
+    proxy.write(0xde, &[0xad, 0xbe, 0xef]).unwrap();
+
+    device.done();
+}
+
+#[test]
+fn i2c_manager_macro() {
+    let expect = vec![
+        i2c::Transaction::write(0xde, vec![0xad, 0xbe, 0xef]),
+    ];
+    let mut device = i2c::Mock::new(&expect);
+    let manager: &'static shared_bus::BusManagerStd<_> =
+        shared_bus::new_std!(i2c::Mock = device.clone()).unwrap();
+    let mut proxy = manager.acquire_i2c();
+
+    proxy.write(0xde, &[0xad, 0xbe, 0xef]).unwrap();
+
     device.done();
 }
 

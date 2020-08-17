@@ -13,20 +13,21 @@ keywords = ["embedded-hal", "embedded-hal-impl", "i2c", "spi", "bus"]
 categories = ["embedded", "no-std"]
 license = "MIT/Apache-2.0"
 
+[package.metadata.docs.rs]
+all-features = true
+
 [dependencies]
 embedded-hal = "0.2.3"
-
-[dev-dependencies]
-embedded-hal-mock = "0.7.0"
+once_cell = { version = "1.4.0", optional = true }
 
 [dependencies.cortex-m]
 optional = true
 version = "0.6.0"
 
+[dev-dependencies]
+embedded-hal-mock = "0.7.0"
+
 [features]
-std = []
+std = ["once_cell"]
 docsrs = []
 cortexm = ["cortex-m"]
-
-[package.metadata.docs.rs]
-all-features = true
