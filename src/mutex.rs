@@ -1,84 +1,39 @@
-/// An abstraction over a mutex lock.
-///
-/// Any type that can implement this trait can be used as a mutex for sharing a bus.
-///
-/// If the `std` feature is enabled, [`BusMutex`] is implemented for [`std::sync::Mutex`].
-/// If the `cortexm` feature is enabled, [`BusMutex`] is implemented for [`cortex_m::interrupt::Mutex`].
-///
-/// If there is no feature available for your Mutex type, you have to write one yourself. It should
-/// look something like this (for [`cortex_m`] as an example):
-/// ```
-/// use shared_bus;
-/// use cortex_m;
-///
-/// // You need a newtype because you can't implement foreign traits on
-/// // foreign types.
-/// struct MyMutex<T>(cortex_m::interrupt::Mutex<T>);
-///
-/// impl<T> shared_bus::BusMutex<T> for MyMutex<T> {
-///     fn create(v: T) -> Self {
-///         Self(cortex_m::interrupt::Mutex::new(v))
-///     }
-///
-///     fn lock<R, F: FnOnce(&T) -> R>(&self, f: F) -> R {
-///         cortex_m::interrupt::free(|cs| {
-///             let v = self.0.borrow(cs);
-///             f(v)
-///         })
-///     }
-/// }
-///
-/// type MyBusManager<L, P> = shared_bus::BusManager<MyMutex<L>, P>;
-/// ```
-pub trait BusMutex<T> {
-    /// Create a new instance of this mutex type containing the value `v`.
-    fn create(v: T) -> Self;
+pub trait BusMutex {
+    type Bus;
 
-    /// Lock the mutex for the duration of the closure `f`.
-    fn lock<R, F: FnOnce(&T) -> R>(&self, f: F) -> R;
-}
-
-/// A dummy mutex for bus-sharing in a single task.
-///
-/// This mutex type can be used when all bus users are contained in a single execution context.  In
-/// such a situation, no actual mutex is needed, because a RefCell alone is sufficient to ensuring
-/// only a single peripheral can access the bus at the same time.
-///
-/// To uphold safety, this type is `!Send` and `!Sync`.
-pub struct NullMutex<T>(T);
-
-impl<T> BusMutex<T> for NullMutex<T> {
-    fn create(v: T) -> Self {
-        NullMutex(v)
-    }
-
-    fn lock<R, F: FnOnce(&T) -> R>(&self, f: F) -> R {
-        f(&self.0)
-    }
+    fn create(v: Self::Bus) -> Self;
+    fn lock<R, F: FnOnce(&mut Self::Bus) -> R>(&self, f: F) -> R;
 }
 
 #[cfg(feature = "std")]
-impl<T> BusMutex<T> for ::std::sync::Mutex<T> {
-    fn create(v: T) -> Self {
+impl<T> BusMutex for ::std::sync::Mutex<T> {
+    type Bus = T;
+
+    fn create(v: Self::Bus) -> Self {
         ::std::sync::Mutex::new(v)
     }
 
-    fn lock<R, F: FnOnce(&T) -> R>(&self, f: F) -> R {
-        let v = self.lock().unwrap();
-        f(&v)
+    fn lock<R, F: FnOnce(&mut Self::Bus) -> R>(&self, f: F) -> R {
+        let mut v = self.lock().unwrap();
+        f(&mut v)
     }
 }
 
-#[cfg(feature = "cortexm")]
-impl<T> BusMutex<T> for ::cortex_m::interrupt::Mutex<T> {
-    fn create(v: T) -> ::cortex_m::interrupt::Mutex<T> {
-        ::cortex_m::interrupt::Mutex::new(v)
-    }
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-    fn lock<R, F: FnOnce(&T) -> R>(&self, f: F) -> R {
-        ::cortex_m::interrupt::free(|cs| {
-            let v = self.borrow(cs);
-            f(v)
-        })
+    #[test]
+    fn std_mutex_api_test() {
+        let t = "hello ".to_string();
+        let m: std::sync::Mutex<_> = BusMutex::create(t);
+
+        BusMutex::lock(&m, |s| {
+            s.push_str("world");
+        });
+
+        BusMutex::lock(&m, |s| {
+            assert_eq!("hello world", s);
+        });
     }
 }
