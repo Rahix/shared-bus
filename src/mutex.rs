@@ -40,6 +40,25 @@ impl<T> BusMutex for ::std::sync::Mutex<T> {
     }
 }
 
+#[cfg(feature = "cortex-m")]
+pub type CortexMMutex<T> = cortex_m::interrupt::Mutex<cell::RefCell<T>>;
+
+#[cfg(feature = "cortex-m")]
+impl<T> BusMutex for CortexMMutex<T> {
+    type Bus = T;
+
+    fn create(v: T) -> Self {
+        cortex_m::interrupt::Mutex::new(cell::RefCell::new(v))
+    }
+
+    fn lock<R, F: FnOnce(&mut Self::Bus) -> R>(&self, f: F) -> R {
+        cortex_m::interrupt::free(|cs| {
+            let c = self.borrow(cs);
+            f(&mut c.borrow_mut())
+        })
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

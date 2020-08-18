@@ -13,3 +13,16 @@ macro_rules! new_std {
         }
     }};
 }
+
+#[cfg(feature = "cortex-m")]
+#[macro_export]
+macro_rules! new_cortexm {
+    ($bus_type:ty = $bus:expr) => {{
+        let m: Option<&'static mut _> = $crate::cortex_m::singleton!(
+            : $crate::BusManagerCortexM<$bus_type> =
+                $crate::BusManagerCortexM::new($bus)
+        );
+
+        m
+    }};
+}

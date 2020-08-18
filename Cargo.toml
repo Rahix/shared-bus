@@ -19,10 +19,7 @@ all-features = true
 [dependencies]
 embedded-hal = "0.2.3"
 once_cell = { version = "1.4.0", optional = true }
-
-[dependencies.cortex-m]
-optional = true
-version = "0.6.0"
+cortex-m = { version = "0.6.3", optional = true }
 
 [dev-dependencies]
 embedded-hal-mock = "0.7.0"
@@ -30,4 +27,3 @@ embedded-hal-mock = "0.7.0"
 [features]
 std = ["once_cell"]
 docsrs = []
-cortexm = ["cortex-m"]
