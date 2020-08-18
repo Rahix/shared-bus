@@ -12,7 +12,10 @@ pub use once_cell;
 
 pub use manager::BusManager;
 pub use mutex::BusMutex;
+pub use mutex::NullMutex;
 pub use proxies::I2cProxy;
+
+pub type BusManagerSimple<BUS> = BusManager<NullMutex<BUS>>;
 
 #[cfg(feature = "std")]
 pub type BusManagerStd<BUS> = BusManager<::std::sync::Mutex<BUS>>;
