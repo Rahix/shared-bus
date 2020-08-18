@@ -14,6 +14,7 @@ pub use manager::BusManager;
 pub use mutex::BusMutex;
 pub use mutex::NullMutex;
 pub use proxies::I2cProxy;
+pub use proxies::SpiProxy;
 
 pub type BusManagerSimple<BUS> = BusManager<NullMutex<BUS>>;
 
