@@ -1,6 +1,5 @@
 use embedded_hal::prelude::*;
 use embedded_hal_mock::spi;
-use std::thread;
 
 #[test]
 fn fake_spi_device() {
@@ -19,7 +18,7 @@ fn spi_manager_manual() {
     let manager = shared_bus::BusManagerSimple::new(device.clone());
     let mut proxy = manager.acquire_spi();
 
-    proxy.write(&[0xab, 0xcd, 0xef]);
+    proxy.write(&[0xab, 0xcd, 0xef]).unwrap();
 
     device.done();
 }
@@ -34,10 +33,10 @@ fn spi_proxy() {
     let manager = shared_bus::BusManagerSimple::new(device.clone());
     let mut proxy = manager.acquire_spi();
 
-    proxy.write(&[0xab, 0xcd, 0xef]);
+    proxy.write(&[0xab, 0xcd, 0xef]).unwrap();
 
     let mut buf = vec![0x01, 0x02];
-    proxy.transfer(&mut buf);
+    proxy.transfer(&mut buf).unwrap();
     assert_eq!(&buf, &[0x03, 0x04]);
 
     device.done();
@@ -54,10 +53,10 @@ fn spi_multi() {
     let mut proxy1 = manager.acquire_spi();
     let mut proxy2 = manager.acquire_spi();
 
-    proxy1.write(&[0xab, 0xcd, 0xef]);
+    proxy1.write(&[0xab, 0xcd, 0xef]).unwrap();
 
     let mut buf = vec![0x01, 0x02];
-    proxy2.transfer(&mut buf);
+    proxy2.transfer(&mut buf).unwrap();
     assert_eq!(&buf, &[0x03, 0x04]);
 
     device.done();
