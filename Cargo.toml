@@ -26,4 +26,3 @@ embedded-hal-mock = "0.7.0"
 
 [features]
 std = ["once_cell"]
-docsrs = []
