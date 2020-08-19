@@ -5,6 +5,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+Complete rework of the crate, most items have changed at least slightly.
+Please read the updated documentation to understand how the new version
+works.
+
+### Added
+- A `BusMutexSimple` for sharing within a single task/thread with minimal
+  overhead.
+- Macros for instanciating a 'global' bus manager which lives for `'static`.
+
+### Changed
+- The `BusMutex` trait's `lock()` method now passes `&mut` to the closure,
+  removing the `RefCell` from the manager.
+- The generic parameter of `BusMutex` was moved into an associated type.
+- Instead of a single proxy-type for everything, separate proxy types were
+  introduced, to allow different constraints on their creation.
+
+### Fixed
+- The SPI proxy is now `!Send` to make sure it can only be used from
+  within a single thread/task.
 
 
 ## 0.1.4 - 2018-11-04
