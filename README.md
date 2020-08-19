@@ -1,61 +1,94 @@
-shared-bus [![crates.io page](http://meritbadge.herokuapp.com/shared-bus)](https://crates.io/crates/shared-bus) [![Build Status](https://travis-ci.org/Rahix/shared-bus.svg?branch=master)](https://travis-ci.org/Rahix/shared-bus) [![docs.rs](https://docs.rs/shared-bus/badge.svg)](https://docs.rs/shared-bus)
+shared-bus [![crates.io page](http://meritbadge.herokuapp.com/shared-bus)](https://crates.io/crates/shared-bus) [![docs.rs](https://docs.rs/shared-bus/badge.svg)](https://docs.rs/shared-bus) [![Build Status](https://travis-ci.com/Rahix/shared-bus.svg?branch=master)](https://travis-ci.com/Rahix/shared-bus)
 ==========
 
 **shared-bus** is a crate to allow sharing bus peripherals safely between multiple devices.
 
-Typical usage of this crate might look like this:
-```rust
-extern crate shared_bus;
+In the `embedded-hal` ecosystem, it is convention for drivers to "own" the bus peripheral they
+are operating on.  This implies that only _one_ driver can have access to a certain bus.  That,
+of course, poses an issue when multiple devices are connected to a single bus.
 
-// Create your bus peripheral as usual:
+_shared-bus_ solves this by giving each driver a bus-proxy to own which internally manages
+access to the actual bus in a safe manner.  For a more in-depth introduction of the problem
+this crate is trying to solve, take a look at the [blog post][blog-post].
+
+There are different 'bus managers' for different use-cases:
+
+# Sharing within a single task/thread
+As long as all users of a bus are contained in a single task/thread, bus sharing is very
+simple.  With no concurrency possible, no special synchronization is needed.  This is where
+a [`BusManagerSimple`] should be used:
+
+```rust
+// For example:
 let i2c = I2c::i2c1(dp.I2C1, (scl, sda), 90.khz(), clocks, &mut rcc.apb1);
 
-let manager = shared_bus::BusManager::<std::sync::Mutex<_>, _>::new(i2c);
+let bus = shared_bus::BusManagerSimple::new(i2c);
 
-// You can now acquire bus handles:
-let mut handle = manager.acquire();
-// handle implements `i2c::{Read, Write, WriteRead}`, depending on the
-// implementations of the underlying peripheral
-let mut mydevice = MyDevice::new(manager.acquire());
+let mut proxy1 = bus.acquire_i2c();
+let mut my_device = MyDevice::new(bus.acquire_i2c());
+
+proxy1.write(0x39, &[0xc0, 0xff, 0xee]);
+my_device.do_something_on_the_bus();
 ```
 
-## Mutex Implementation
-To do its job, **shared-bus** needs a mutex. Because each platform has its own
-mutex type, **shared-bus** uses an abstraction: `BusMutex`. This type
-needs to be implemented for your platforms mutex type to allow using this
-crate.
+The `BusManager::acquire_*()` methods can be called as often as needed; each call will yield
+a new bus-proxy of the requested type.
 
-* If `std` is available, activate the `std` feature to enable the implementation
-of `BusMutex` for `std::sync::Mutex`.
-* If your device used `cortex-m`, activate the `cortexm` feature to enable the implementation
-of `BusMutex` for `cortex_m::interrupt::Mutex`.
-* If neither is the case, you need to implement a mutex yourself:
+# Sharing across multiple tasks/threads
+For sharing across multiple tasks/threads, synchronization is needed to ensure all bus-accesses
+are strictly serialized and can't race against each other.  The synchronization is handled by
+a platform-specific [`BusMutex`] implementation.  _shared-bus_ already contains some
+implementations for common targets.  For each one, there is also a macro for easily creating
+a bus-manager with `'static` lifetime, which is almost always a requirement when sharing across
+task/thread boundaries.  As an example:
 
 ```rust
-extern crate shared_bus;
-extern crate cortex_m;
+// For example:
+let i2c = I2c::i2c1(dp.I2C1, (scl, sda), 90.khz(), clocks, &mut rcc.apb1);
 
-// You need a newtype because you can't implement foreign traits on
-// foreign types.
-struct MyMutex<T>(cortex_m::interrupt::Mutex<T>);
+// The bus is a 'static reference -> it lives forever and references can be
+// shared with other threads.
+let bus: &'static _ = shared_bus::new_std!(SomeI2cBus = i2c).unwrap();
 
-impl<T> shared_bus::BusMutex<T> for MyMutex<T> {
-    fn create(v: T) -> Self {
-        Self(cortex_m::interrupt::Mutex::new(v))
-    }
+let mut proxy1 = bus.acquire_i2c();
+let mut my_device = MyDevice::new(bus.acquire_i2c());
 
-    fn lock<R, F: FnOnce(&T) -> R>(&self, f: F) -> R {
-        cortex_m::interrupt::free(|cs| {
-            let v = self.0.borrow(cs);
-            f(v)
-        })
-    }
-}
-
-type MyBusManager<L, P> = shared_bus::BusManager<MyMutex<L>, P>;
+// We can easily move a proxy to another thread:
+# let t =
+std::thread::spawn(move || {
+    my_device.do_something_on_the_bus();
+});
+# t.join().unwrap();
 ```
 
-I am welcoming patches containing mutex implementations for other platforms!
+Those platform-specific bits are guarded by a feature that needs to be enabled.  Here is an
+overview of what's already available:
+
+| Mutex | Bus Manager | `'static` Bus Macro | Feature Name |
+| --- | --- | --- | --- |
+| `std::sync::Mutex` | [`BusManagerStd`] | [`new_std!()`] | `std` |
+| `cortex_m::interrupt::Mutex` | [`BusManagerCortexM`] | [`new_cortexm!()`] | `cortex-m` |
+
+# Supported Busses
+Currently, the following busses can be shared with _shared-bus_:
+
+| Bus | Proxy Type | Acquire Method | Comments |
+| --- | --- | --- | --- |
+| I2C | [`I2cProxy`] | [`.acquire_i2c()`] | |
+| SPI | [`SpiProxy`] | [`.acquire_spi()`] | SPI can only be shared within a single task (See [`SpiProxy`] for details). |
+
+
+[`.acquire_i2c()`]: https://docs.rs/shared-bus/latest/shared_bus/struct.BusManager.html#method.acquire_i2c
+[`.acquire_spi()`]: https://docs.rs/shared-bus/latest/shared_bus/struct.BusManager.html#method.acquire_spi
+[`BusManagerCortexM`]: https://docs.rs/shared-bus/latest/shared_bus/type.BusManagerCortexM.html
+[`BusManagerSimple`]: https://docs.rs/shared-bus/latest/shared_bus/type.BusManagerSimple.html
+[`BusManagerStd`]: https://docs.rs/shared-bus/latest/shared_bus/type.BusManagerStd.html
+[`BusMutex`]: https://docs.rs/shared-bus/latest/shared_bus/trait.BusMutex.html
+[`I2cProxy`]: https://docs.rs/shared-bus/latest/shared_bus/struct.I2cProxy.html
+[`SpiProxy`]: https://docs.rs/shared-bus/latest/shared_bus/struct.SpiProxy.html
+[`new_cortexm!()`]: https://docs.rs/shared-bus/latest/shared_bus/macro.new_cortexm.html
+[`new_std!()`]: https://docs.rs/shared-bus/latest/shared_bus/macro.new_std.html
+[blog-post]: https://blog.rahix.de/001-shared-bus
 
 ## License
 shared-bus is licensed under either of
