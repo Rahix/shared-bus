@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+
+## [0.2.0] - 2020-08-24
 Complete rework of the crate, most items have changed at least slightly.
 Please read the updated documentation to understand how the new version
 works.
@@ -49,5 +52,5 @@ works.
 ## 0.1.0 - 2018-08-13
 Initial release
 
-
-[Unreleased]: https://github.com/Rahix/shared-bus/compare/e24defd5c802...master
+[Unreleased]: https://github.com/Rahix/shared-bus/compare/v0.2.0...master
+[0.2.0]: https://github.com/Rahix/shared-bus/compare/e24defd5c802...v0.2.0

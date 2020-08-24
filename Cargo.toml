@@ -1,6 +1,6 @@
 [package]
 name = "shared-bus"
-version = "0.2.0-alpha.1"
+version = "0.2.0"
 authors = ["Rahix <rahix@rahix.de>"]
 edition = "2018"
 
@@ -10,7 +10,7 @@ documentation = "https://docs.rs/shared-bus"
 readme = "README.md"
 keywords = ["embedded-hal", "embedded-hal-impl", "i2c", "spi", "bus"]
 categories = ["embedded", "no-std"]
-license = "MIT/Apache-2.0"
+license = "MIT OR Apache-2.0"
 
 [package.metadata.docs.rs]
 all-features = true
