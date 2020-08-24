@@ -123,6 +123,39 @@ impl<T> BusMutex for CortexMMutex<T> {
     }
 }
 
+/// Alias for an AVR mutex.
+///
+/// This mutex works by disabling interrupts while the mutex is locked.
+///
+/// This type is only available with the `avr-device` feature.
+#[cfg(feature = "avr-device")]
+pub struct AvrMutex<T> {
+    bus: cell::RefCell<T>,
+}
+
+#[cfg(feature = "avr-device")]
+impl<T> BusMutex for AvrMutex<T> {
+    type Bus = T;
+
+    fn create(v: Self::Bus) -> Self {
+        AvrMutex {
+            bus: cell::RefCell::new(v),
+        }
+    }
+
+    fn lock<R, F: FnOnce(&mut Self::Bus) -> R>(&self, f: F) -> R {
+        avr_device::interrupt::free(|_| {
+            f(&mut self.bus.borrow_mut())
+        })
+    }
+}
+
+// #[cfg(feature = "avr-device")]
+// unsafe impl<T: Send> Send for AvrMutex<T> {}
+
+#[cfg(feature = "avr-device")]
+unsafe impl<T: Send> Sync for AvrMutex<T> {}
+
 #[cfg(test)]
 mod tests {
     use super::*;
