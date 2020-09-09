@@ -132,6 +132,9 @@ pub use mutex::CortexMMutex;
 pub use proxies::I2cProxy;
 pub use proxies::SpiProxy;
 
+#[cfg(feature = "cortex-m")]
+pub use mutex::AtomicCheckMutex;
+
 /// A bus manager for sharing within a single task/thread.
 ///
 /// This is the bus manager with the least overhead; it should always be used when all bus users
@@ -189,3 +192,7 @@ pub type BusManagerStd<BUS> = BusManager<::std::sync::Mutex<BUS>>;
 /// This type is only available with the `cortex-m` feature.
 #[cfg(feature = "cortex-m")]
 pub type BusManagerCortexM<BUS> = BusManager<CortexMMutex<BUS>>;
+
+#[cfg(feature = "cortex-m")]
+/// A convenience type for declaring use with shared-bus.
+pub type BusManagerAtomicCheck<T> = BusManager<AtomicCheckMutex<T>>;

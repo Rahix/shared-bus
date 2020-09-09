@@ -132,3 +132,17 @@ macro_rules! new_cortexm {
         m
     }};
 }
+
+/// Construct a statically allocated bus manager.
+#[cfg(feature = "cortex-m")]
+#[macro_export]
+macro_rules! new_atomic_check {
+    ($bus_type:ty = $bus:expr) => {{
+        let m: Option<&'static mut _> = $crate::cortex_m::singleton!(
+            : $crate::BusManagerAtomicCheck<$bus_type> =
+                $crate::BusManagerAtomicCheck::new($bus)
+        );
+
+        m
+    }};
+}

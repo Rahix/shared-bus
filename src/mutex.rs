@@ -141,3 +141,57 @@ mod tests {
         });
     }
 }
+
+/// A simple coherency checker for sharing across multiple tasks/threads.
+///
+/// This mutex type can be used when all bus users are contained in a single structure, and is
+/// intended for use with RTIC. When all bus users are contained within a structure managed by RTIC,
+/// RTIC will guarantee that bus collisions do not occur. To protect against accidentaly misuse,
+/// this mutex uses an atomic bool to determine when the bus is in use. If a bus collision is
+/// detected, the code will panic.
+///
+/// This mutex type is used with the [`BusManagerAtomicMutex`] type.
+///
+/// This manager type is explicitly safe to share across threads because it checks to ensure that
+/// collisions due to bus sharing do not occur.
+///
+/// [`BusManagerAtomicMutex`]: ./type.BusManagerAtomicMutex.html
+#[cfg(feature = "cortex-m")]
+#[derive(Debug)]
+pub struct AtomicCheckMutex<BUS> {
+    bus: core::cell::UnsafeCell<BUS>,
+    busy: core::sync::atomic::AtomicBool,
+}
+
+// It is explicitly safe to share this across threads because there is a coherency check using an
+// atomic bool comparison.
+#[cfg(feature = "cortex-m")]
+unsafe impl<BUS> Sync for AtomicCheckMutex<BUS> {}
+
+#[cfg(feature = "cortex-m")]
+impl<BUS> BusMutex for AtomicCheckMutex<BUS> {
+    type Bus = BUS;
+
+    fn create(v: BUS) -> Self {
+        Self {
+            bus: core::cell::UnsafeCell::new(v),
+            busy: core::sync::atomic::AtomicBool::from(false),
+        }
+    }
+
+    fn lock<R, F: FnOnce(&mut Self::Bus) -> R>(&self, f: F) -> R {
+        self.busy
+            .compare_exchange(
+                false,
+                true,
+                core::sync::atomic::Ordering::SeqCst,
+                core::sync::atomic::Ordering::SeqCst,
+            )
+            .expect("Bus conflict");
+        let result = f(unsafe { &mut *self.bus.get() });
+
+        self.busy.store(false, core::sync::atomic::Ordering::SeqCst);
+
+        result
+    }
+}

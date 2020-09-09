@@ -68,6 +68,7 @@ overview of what's already available:
 | --- | --- | --- | --- |
 | `std::sync::Mutex` | [`BusManagerStd`] | [`new_std!()`] | `std` |
 | `cortex_m::interrupt::Mutex` | [`BusManagerCortexM`] | [`new_cortexm!()`] | `cortex-m` |
+| NA | [`BusManagerAtomicCheck`] | [`new_atomic_check!()`] | `cortex-m` |
 
 # Supported Busses
 Currently, the following busses can be shared with _shared-bus_:
@@ -82,11 +83,13 @@ Currently, the following busses can be shared with _shared-bus_:
 [`.acquire_spi()`]: https://docs.rs/shared-bus/latest/shared_bus/struct.BusManager.html#method.acquire_spi
 [`BusManagerCortexM`]: https://docs.rs/shared-bus/latest/shared_bus/type.BusManagerCortexM.html
 [`BusManagerSimple`]: https://docs.rs/shared-bus/latest/shared_bus/type.BusManagerSimple.html
+[`BusManagerAtomicCheck`]: https://docs.rs/shared-bus/latest/shared_bus/type.BusManagerAtomicCheck.html
 [`BusManagerStd`]: https://docs.rs/shared-bus/latest/shared_bus/type.BusManagerStd.html
 [`BusMutex`]: https://docs.rs/shared-bus/latest/shared_bus/trait.BusMutex.html
 [`I2cProxy`]: https://docs.rs/shared-bus/latest/shared_bus/struct.I2cProxy.html
 [`SpiProxy`]: https://docs.rs/shared-bus/latest/shared_bus/struct.SpiProxy.html
 [`new_cortexm!()`]: https://docs.rs/shared-bus/latest/shared_bus/macro.new_cortexm.html
+[`new_atomic_check!()`]: https://docs.rs/shared-bus/latest/shared_bus/macro.new_atomic_check.html
 [`new_std!()`]: https://docs.rs/shared-bus/latest/shared_bus/macro.new_std.html
 [blog-post]: https://blog.rahix.de/001-shared-bus
 
