@@ -214,15 +214,19 @@ pub type BusManagerCortexM<BUS> = BusManager<CortexMMutex<BUS>>;
 /// In order to use this with RTIC (as an example), all devices on the shared bus must be stored in
 /// a singular resource:
 /// ```rust
-/// struct SharedBusResources<T> {
-///     device: Device<shared_bus::I2cProxy<'static, T>>,
-///     other_device: OtherDevice<shared_bus::I2cProxy<'static, T>>,
-/// }
+/// struct Device<T> { _bus: T };
+/// struct OtherDevice<T> { _bus: T };
 ///
 /// type I2C = ();
+/// type Proxy = shared_bus::I2cProxy<'static, shared_bus::AtomicCheckMutex<I2C>>;
+///
+/// struct SharedBusResources {
+///     device: Device<Proxy>,
+///     other_device: OtherDevice<Proxy>,
+/// }
 ///
 /// struct Resources {
-///     shared_bus_resources: SharedBusResources<I2C>
+///     shared_bus_resources: SharedBusResources,
 /// }
 /// ```
 ///
