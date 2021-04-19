@@ -124,11 +124,17 @@ pub use once_cell;
 #[cfg(feature = "cortex-m")]
 pub use cortex_m;
 
+#[doc(hidden)]
+#[cfg(feature = "avr-device")]
+pub use avr_device;
+
 pub use manager::BusManager;
 pub use mutex::BusMutex;
 pub use mutex::NullMutex;
 #[cfg(feature = "cortex-m")]
 pub use mutex::CortexMMutex;
+#[cfg(feature = "avr-device")]
+pub use mutex::AvrMutex;
 pub use proxies::I2cProxy;
 pub use proxies::SpiProxy;
 
@@ -189,3 +195,16 @@ pub type BusManagerStd<BUS> = BusManager<::std::sync::Mutex<BUS>>;
 /// This type is only available with the `cortex-m` feature.
 #[cfg(feature = "cortex-m")]
 pub type BusManagerCortexM<BUS> = BusManager<CortexMMutex<BUS>>;
+
+/// A bus manager for safely sharing between tasks on AVR.
+///
+/// This manager works by turning off interrupts for each bus transaction which prevents racy
+/// accesses from different tasks/execution contexts (e.g. interrupts).  Usually, for sharing
+/// between tasks, a manager with `'static` lifetime is needed which can be created using the
+/// [`shared_bus::new_avr!()`][new_avr] macro.
+///
+/// [new_avr]: ./macro.new_avr.html
+///
+/// This type is only available with the `avr-device` feature.
+#[cfg(feature = "avr-device")]
+pub type BusManagerAvr<BUS> = BusManager<AvrMutex<BUS>>;

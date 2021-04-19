@@ -132,3 +132,91 @@ macro_rules! new_cortexm {
         m
     }};
 }
+
+/// Macro for creating an AVR bus manager with `'static` lifetime.
+///
+/// This macro is a convenience helper for creating a bus manager that lives for the `'static`
+/// lifetime an thus can be safely shared across tasks/execution contexts (like interrupts).
+///
+/// This macro is only available with the `avr-device` feature.
+///
+/// # Syntax
+/// ```ignore
+/// let bus = shared_bus::new_avr!(<Full Bus Type Signature> = <bus>).unwrap();
+/// ```
+///
+/// The macro returns an Option which will be `Some(&'static bus_manager)` on the first run and
+/// `None` afterwards.  This is necessary to uphold safety around the inner `static` variable.
+///
+/// # Example
+/// ```no_run
+/// # use embedded_hal::blocking::i2c::Write;
+/// # struct MyDevice<T>(T);
+/// # impl<T> MyDevice<T> {
+/// #     pub fn new(t: T) -> Self { MyDevice(t) }
+/// #     pub fn do_something_on_the_bus(&mut self) { }
+/// # }
+/// #
+/// # struct SomeI2cBus;
+/// # impl Write for SomeI2cBus {
+/// #     type Error = ();
+/// #     fn write(&mut self, addr: u8, buffer: &[u8]) -> Result<(), Self::Error> { Ok(()) }
+/// # }
+/// static mut SHARED_DEVICE:
+///     Option<MyDevice<shared_bus::I2cProxy<shared_bus::AvrMutex<SomeI2cBus>>>>
+///     = None;
+///
+/// fn main() -> ! {
+/// #   let i2c = SomeI2cBus;
+///     // For example:
+///     // let i2c = atmega328p_hal::i2c::I2c::new(
+///     //     dp.TWI,
+///     //     pins.a4.into_pull_up_input(&mut pins.ddr),
+///     //     pins.a5.into_pull_up_input(&mut pins.ddr),
+///     //     50000,
+///     // );
+///
+///     // The bus is a 'static reference -> it lives forever and references can be
+///     // shared with other tasks.
+///     let bus: &'static _ = shared_bus::new_avr!(SomeI2cBus = i2c).unwrap();
+///
+///     let mut proxy1 = bus.acquire_i2c();
+///     let my_device = MyDevice::new(bus.acquire_i2c());
+///
+///     unsafe {
+///         SHARED_DEVICE = Some(my_device);
+///     }
+///
+///     // enable the interrupt
+///
+///     loop {
+///         proxy1.write(0x39, &[0xaa]);
+///     }
+/// }
+///
+/// fn INTERRUPT() {
+///     let dev = unsafe {SHARED_DEVICE.as_mut().unwrap()};
+///
+///     dev.do_something_on_the_bus();
+/// }
+/// ```
+#[cfg(feature = "avr-device")]
+#[macro_export]
+macro_rules! new_avr {
+    ($bus_type:ty = $bus:expr) => {{
+        static mut MANAGER: Option<$crate::BusManagerAvr<$bus_type>> = None;
+
+        let m: Option<&'static _> = $crate::avr_device::interrupt::free(|_| {
+            unsafe {
+                if MANAGER.is_none() {
+                    MANAGER = Some($crate::BusManagerAvr::new($bus));
+                    MANAGER.as_ref()
+                } else {
+                    None
+                }
+            }
+        });
+
+        m
+    }};
+}
