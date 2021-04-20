@@ -85,6 +85,7 @@
 //! | --- | --- | --- | --- |
 //! | `std::sync::Mutex` | [`BusManagerStd`] | [`new_std!()`] | `std` |
 //! | `cortex_m::interrupt::Mutex` | [`BusManagerCortexM`] | [`new_cortexm!()`] | `cortex-m` |
+//! | None (Automatically Managed) | [`BusManagerAtomicCheck`] | [`new_atomic_check!()`] | `cortex-m` |
 //!
 //! # Supported Busses
 //! Currently, the following busses can be shared with _shared-bus_:
@@ -98,6 +99,7 @@
 //! [`.acquire_i2c()`]: ./struct.BusManager.html#method.acquire_i2c
 //! [`.acquire_spi()`]: ./struct.BusManager.html#method.acquire_spi
 //! [`BusManagerCortexM`]: ./type.BusManagerCortexM.html
+//! [`BusManagerAtomicCheck`]: ./type.BusManagerAtomicCheck.html
 //! [`BusManagerSimple`]: ./type.BusManagerSimple.html
 //! [`BusManagerStd`]: ./type.BusManagerStd.html
 //! [`BusMutex`]: ./trait.BusMutex.html
@@ -105,16 +107,16 @@
 //! [`SpiProxy`]: ./struct.SpiProxy.html
 //! [`new_cortexm!()`]: ./macro.new_cortexm.html
 //! [`new_std!()`]: ./macro.new_std.html
+//! [`new_atomic_check!()`]: ./macro.new_atomic_check.html
 //! [blog-post]: https://blog.rahix.de/001-shared-bus
 #![doc(html_root_url = "https://docs.rs/shared-bus")]
 #![cfg_attr(not(feature = "std"), no_std)]
-
 #![warn(missing_docs)]
 
+mod macros;
 mod manager;
 mod mutex;
 mod proxies;
-mod macros;
 
 #[doc(hidden)]
 #[cfg(feature = "std")]
@@ -126,11 +128,14 @@ pub use cortex_m;
 
 pub use manager::BusManager;
 pub use mutex::BusMutex;
-pub use mutex::NullMutex;
 #[cfg(feature = "cortex-m")]
 pub use mutex::CortexMMutex;
+pub use mutex::NullMutex;
 pub use proxies::I2cProxy;
 pub use proxies::SpiProxy;
+
+#[cfg(feature = "cortex-m")]
+pub use mutex::AtomicCheckMutex;
 
 /// A bus manager for sharing within a single task/thread.
 ///
@@ -189,3 +194,47 @@ pub type BusManagerStd<BUS> = BusManager<::std::sync::Mutex<BUS>>;
 /// This type is only available with the `cortex-m` feature.
 #[cfg(feature = "cortex-m")]
 pub type BusManagerCortexM<BUS> = BusManager<CortexMMutex<BUS>>;
+
+/// A bus manager for safely sharing the bus when using concurrency frameworks (such as RTIC).
+///
+/// This manager relies on RTIC or some other concurrency framework to manage resource
+/// contention automatically. As a redundancy, this manager uses an atomic boolean to check
+/// whether or not a resource is currently in use. This is purely used as a fail-safe against
+/// misuse.
+///
+/// ## Warning
+/// If devices on the same shared bus are not treated as a singular resource, it is possible that
+/// pre-emption may occur. In this case, the manger will panic to prevent the race condition.
+///
+/// ## Usage
+/// In order to use this manager with a concurrency framework such as RTIC, all devices on the
+/// shared bus must be stored in the same logic resource. The concurrency framework will require a
+/// resource lock if pre-emption is possible.
+///
+/// In order to use this with RTIC (as an example), all devices on the shared bus must be stored in
+/// a singular resource:
+/// ```rust
+/// struct Device<T> { _bus: T };
+/// struct OtherDevice<T> { _bus: T };
+///
+/// type I2C = ();
+/// type Proxy = shared_bus::I2cProxy<'static, shared_bus::AtomicCheckMutex<I2C>>;
+///
+/// struct SharedBusResources {
+///     device: Device<Proxy>,
+///     other_device: OtherDevice<Proxy>,
+/// }
+///
+/// struct Resources {
+///     shared_bus_resources: SharedBusResources,
+/// }
+/// ```
+///
+/// Usually, for sharing / between tasks, a manager with `'static` lifetime is needed which can be
+/// created using the [`shared_bus::new_atomic_check!()`][new_atomic_check] macro.
+///
+/// [new_atomic_check]: ./macro.new_atomic_check.html
+///
+/// This type is only available with the `cortex-m` feature.
+#[cfg(feature = "cortex-m")]
+pub type BusManagerAtomicCheck<T> = BusManager<AtomicCheckMutex<T>>;
