@@ -84,7 +84,7 @@
 ///
 /// [`new_cortexm!()`]: ./macro.new_cortexm.html
 #[derive(Debug)]
-pub struct BusManager<M: crate::BusMutex> {
+pub struct BusManager<M> {
     mutex: M,
 }
 

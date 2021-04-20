@@ -11,7 +11,7 @@ use embedded_hal::blocking::spi;
 ///
 /// [acquire_i2c]: ./struct.BusManager.html#method.acquire_i2c
 #[derive(Debug)]
-pub struct I2cProxy<'a, M: crate::BusMutex> {
+pub struct I2cProxy<'a, M> {
     pub(crate) mutex: &'a M,
 }
 
@@ -76,7 +76,7 @@ where
 /// [acquire_spi]: ./struct.BusManager.html#method.acquire_spi
 /// [`BusManagerSimple`]: ./type.BusManagerSimple.html
 #[derive(Debug)]
-pub struct SpiProxy<'a, M: crate::BusMutex> {
+pub struct SpiProxy<'a, M> {
     pub(crate) mutex: &'a M,
     pub(crate) _u: core::marker::PhantomData<*mut ()>,
 }
