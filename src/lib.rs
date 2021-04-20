@@ -212,29 +212,49 @@ pub type BusManagerCortexM<BUS> = BusManager<CortexMMutex<BUS>>;
 /// resource lock if pre-emption is possible.
 ///
 /// In order to use this with RTIC (as an example), all devices on the shared bus must be stored in
-/// a singular resource:
+/// a singular resource.  Additionally, a manager with `'static` lifetime is needed which can be
+/// created using the [`shared_bus::new_atomic_check!()`][new_atomic_check] macro.  It should
+/// roughly look like this (there is also a [full example][shared-bus-rtic-example] available):
+///
 /// ```rust
-/// struct Device<T> { _bus: T };
-/// struct OtherDevice<T> { _bus: T };
+/// struct Device<T> { bus: T };
+/// struct OtherDevice<T> { bus: T };
 ///
-/// type I2C = ();
-/// type Proxy = shared_bus::I2cProxy<'static, shared_bus::AtomicCheckMutex<I2C>>;
+/// // the HAL I2C driver type
+/// type I2cType = ();
+/// type Proxy = shared_bus::I2cProxy<'static, shared_bus::AtomicCheckMutex<I2cType>>;
 ///
-/// struct SharedBusResources {
+/// struct SharedBusDevices {
 ///     device: Device<Proxy>,
 ///     other_device: OtherDevice<Proxy>,
 /// }
 ///
 /// struct Resources {
-///     shared_bus_resources: SharedBusResources,
+///     shared_bus_devices: SharedBusDevices,
+/// }
+///
+///
+/// // in the RTIC init function
+/// fn init() -> Resources {
+///     // init the bus like usual
+///     let i2c: I2cType = ();
+///
+///     let bus_manager: &'static _ = shared_bus::new_atomic_check!(I2cType = i2c).unwrap();
+///
+///     let devices = SharedBusDevices {
+///         device: Device { bus: bus_manager.acquire_i2c() },
+///         other_device: OtherDevice { bus: bus_manager.acquire_i2c() },
+///     };
+///
+///     Resources {
+///         shared_bus_devices: devices,
+///     }
 /// }
 /// ```
 ///
-/// Usually, for sharing / between tasks, a manager with `'static` lifetime is needed which can be
-/// created using the [`shared_bus::new_atomic_check!()`][new_atomic_check] macro.
-///
 /// [new_atomic_check]: ./macro.new_atomic_check.html
+/// [shared-bus-rtic-example]: https://github.com/ryan-summers/shared-bus-example/blob/master/src/main.rs
 ///
-/// This type is only available with the `cortex-m` feature.
+/// This type is only available with the `cortex-m` feature (but this may change in the future!).
 #[cfg(feature = "cortex-m")]
 pub type BusManagerAtomicCheck<T> = BusManager<AtomicCheckMutex<T>>;
