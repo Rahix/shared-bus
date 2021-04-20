@@ -10,9 +10,17 @@ use embedded_hal::blocking::spi;
 /// An `I2cProxy` is created by calling [`BusManager::acquire_i2c()`][acquire_i2c].
 ///
 /// [acquire_i2c]: ./struct.BusManager.html#method.acquire_i2c
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct I2cProxy<'a, M: crate::BusMutex> {
     pub(crate) mutex: &'a M,
+}
+
+impl<'a, M: crate::BusMutex> Clone for I2cProxy<'a, M> {
+    fn clone(&self) -> Self {
+        Self {
+            mutex: &self.mutex,
+        }
+    }
 }
 
 impl<'a, M: crate::BusMutex> i2c::Write for I2cProxy<'a, M>
@@ -67,10 +75,19 @@ where
 ///
 /// [acquire_spi]: ./struct.BusManager.html#method.acquire_spi
 /// [`BusManagerSimple`]: ./type.BusManagerSimple.html
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct SpiProxy<'a, M: crate::BusMutex> {
     pub(crate) mutex: &'a M,
     pub(crate) _u: core::marker::PhantomData<*mut ()>,
+}
+
+impl<'a, M: crate::BusMutex> Clone for SpiProxy<'a, M> {
+    fn clone(&self) -> Self {
+        Self {
+            mutex: &self.mutex,
+            _u: core::marker::PhantomData,
+        }
+    }
 }
 
 impl<'a, M: crate::BusMutex> spi::Transfer<u8> for SpiProxy<'a, M>
