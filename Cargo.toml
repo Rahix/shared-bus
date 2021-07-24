@@ -28,5 +28,5 @@ std = ["once_cell"]
 
 
 [patch.crates-io]
-embedded-hal = { path = "../embedded-hal" }
-embedded-hal-mock = { path = "../embedded-hal-mock" }
+embedded-hal = { git = "https://github.com/ryankurte/embedded-hal", branch = "feature/spi-cs" }
+embedded-hal-mock = { git = "https://github.com/ryankurte/embedded-hal-mock", branch="support-eh-v1.0.0-alpha" }
