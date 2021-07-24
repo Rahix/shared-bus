@@ -1,4 +1,4 @@
-use embedded_hal::prelude::*;
+use embedded_hal::blocking::spi::*;
 use embedded_hal_mock::spi;
 
 #[test]

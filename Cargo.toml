@@ -16,7 +16,7 @@ license = "MIT OR Apache-2.0"
 all-features = true
 
 [dependencies]
-embedded-hal = "0.2.3"
+embedded-hal = "1.0.0-alpha.4"
 once_cell = { version = "1.4.0", optional = true }
 cortex-m = { version = "0.6.3", optional = true }
 
@@ -25,3 +25,8 @@ embedded-hal-mock = "0.7.0"
 
 [features]
 std = ["once_cell"]
+
+
+[patch.crates-io]
+embedded-hal = { path = "../embedded-hal" }
+embedded-hal-mock = { path = "../embedded-hal-mock" }

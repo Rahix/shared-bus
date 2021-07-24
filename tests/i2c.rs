@@ -1,4 +1,4 @@
-use embedded_hal::prelude::*;
+use embedded_hal::blocking::i2c::*;
 use embedded_hal_mock::i2c;
 use std::thread;
 

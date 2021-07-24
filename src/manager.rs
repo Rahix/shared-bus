@@ -146,7 +146,7 @@ impl<T> BusManager<crate::NullMutex<T>> {
     ///
     /// ```
     /// # use embedded_hal::blocking::spi;
-    /// # use embedded_hal::digital::v2;
+    /// # use embedded_hal::blocking::digital::OutputPin;
     /// # use embedded_hal::blocking::spi::Write as _;
     /// # struct MyDevice<T>(T);
     /// # impl<T: spi::Write<u8>> MyDevice<T> {
@@ -156,7 +156,7 @@ impl<T> BusManager<crate::NullMutex<T>> {
     /// #     }
     /// # }
     /// #
-    /// # fn _example(mut cs1: impl v2::OutputPin, spi: impl spi::Write<u8>) {
+    /// # fn _example(mut cs1: impl OutputPin, spi: impl spi::Write<u8>) {
     /// let bus = shared_bus::BusManagerSimple::new(spi);
     ///
     /// let mut proxy1 = bus.acquire_spi();

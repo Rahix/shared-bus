@@ -119,6 +119,10 @@ mod mutex;
 mod proxies;
 
 #[doc(hidden)]
+#[cfg(test)]
+extern crate std;
+
+#[doc(hidden)]
 #[cfg(feature = "std")]
 pub use once_cell;
 
