@@ -19,9 +19,12 @@ all-features = true
 embedded-hal = "0.2.3"
 once_cell = { version = "1.4.0", optional = true }
 cortex-m = { version = "0.6.3", optional = true }
+xtensa-lx6 = { version = "0.2.0", optional = true }
+spin = { version = "0.9.2", optional = true }
 
 [dev-dependencies]
 embedded-hal-mock = "0.7.0"
 
 [features]
 std = ["once_cell"]
+xtensa = ["xtensa-lx6", "spin"]
