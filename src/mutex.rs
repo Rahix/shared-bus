@@ -72,7 +72,7 @@ impl<T> BusMutex for NullMutex<T> {
 
     fn create(v: Self::Bus) -> Self {
         NullMutex {
-            bus: cell::RefCell::new(v)
+            bus: cell::RefCell::new(v),
         }
     }
 
@@ -132,18 +132,18 @@ impl<T> BusMutex for CortexMMutex<T> {
 ///
 /// This type is only available with the `xtensa_lx6` feature.
 #[cfg(feature = "xtensa-lx6")]
-pub type XtensaMutex<T> = spin::Mutex<cell::RefCell<T>>;
+pub type XtensaMutex<T> = spin::Mutex<T>;
 
 #[cfg(feature = "xtensa-lx6")]
 impl<T> BusMutex for XtensaMutex<T> {
     type Bus = T;
 
     fn create(v: T) -> Self {
-        spin::Mutex::new(cell::RefCell::new(v))
+        spin::Mutex::new(v)
     }
 
     fn lock<R, F: FnOnce(&mut Self::Bus) -> R>(&self, f: F) -> R {
-        xtensa_lx6::interrupt::free(|_| f(&mut (*self.lock().borrow_mut())))
+        xtensa_lx6::interrupt::free(|_| f(&mut (*self.lock())))
     }
 }
 
