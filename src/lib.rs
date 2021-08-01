@@ -85,7 +85,7 @@
 //! | --- | --- | --- | --- |
 //! | `std::sync::Mutex` | [`BusManagerStd`] | [`new_std!()`] | `std` |
 //! | `cortex_m::interrupt::Mutex` | [`BusManagerCortexM`] | [`new_cortexm!()`] | `cortex-m` |
-//! | `spin::Mutex` | [`BusManagerXtensa`] | [`new_xtensa!()`] | `xtensa` |
+//! | `shared_bus::XtensaMutex` (`spin::Mutex` in critical section) | [`BusManagerXtensa`] | [`new_xtensa!()`] | `xtensa` |
 //! | None (Automatically Managed) | [`BusManagerAtomicCheck`] | [`new_atomic_check!()`] | `cortex-m` |
 //!
 //! # Supported Busses
