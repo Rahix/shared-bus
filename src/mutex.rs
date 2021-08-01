@@ -123,27 +123,27 @@ impl<T> BusMutex for CortexMMutex<T> {
     }
 }
 
-/// Alias for xtensa-lx6 mutex.
+/// Wrapper for an interrupt free spin mutex.
 ///
-/// Based on [`xtensa-lx6::mutex::CriticalSectionSpinLockMutex`][xtensa-lx6-mutex].  This mutex works by disabling
+/// Based on [`spin::Mutex`][spin-mutex]. This mutex works by disabling
 /// interrupts while the mutex is locked.
 ///
-/// [xtensa-lx6-mutex]: https://docs.rs/xtensa-lx6/0.2.0/xtensa_lx6/mutex/struct.CriticalSectionSpinLockMutex.html
+/// [spin-mutex]: https://docs.rs/spin/0.9.2/spin/type.Mutex.html
 ///
-/// This type is only available with the `xtensa_lx6` feature.
-#[cfg(feature = "xtensa-lx6")]
-pub type XtensaMutex<T> = spin::Mutex<T>;
+/// This type is only available with the `xtensa` feature.
+#[cfg(feature = "xtensa")]
+pub struct XtensaMutex<T>(spin::Mutex<T>);
 
-#[cfg(feature = "xtensa-lx6")]
+#[cfg(feature = "xtensa")]
 impl<T> BusMutex for XtensaMutex<T> {
     type Bus = T;
 
     fn create(v: T) -> Self {
-        spin::Mutex::new(v)
+        XtensaMutex(spin::Mutex::new(v))
     }
 
     fn lock<R, F: FnOnce(&mut Self::Bus) -> R>(&self, f: F) -> R {
-        xtensa_lx6::interrupt::free(|_| f(&mut (*self.lock())))
+        xtensa_lx6::interrupt::free(|_| f(&mut (*self.0.lock())))
     }
 }
 
