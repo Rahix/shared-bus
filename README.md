@@ -1,4 +1,4 @@
-shared-bus [![crates.io page](http://meritbadge.herokuapp.com/shared-bus)](https://crates.io/crates/shared-bus) [![docs.rs](https://docs.rs/shared-bus/badge.svg)](https://docs.rs/shared-bus) [![Build Status](https://travis-ci.com/Rahix/shared-bus.svg?branch=master)](https://travis-ci.com/Rahix/shared-bus)
+shared-bus [![crates.io page](https://img.shields.io/crates/v/shared-bus)](https://crates.io/crates/shared-bus) [![docs.rs](https://docs.rs/shared-bus/badge.svg)](https://docs.rs/shared-bus) [![Continuous Integration](https://github.com/Rahix/shared-bus/actions/workflows/ci.yml/badge.svg)](https://github.com/Rahix/shared-bus/actions/workflows/ci.yml)
 ==========
 
 **shared-bus** is a crate to allow sharing bus peripherals safely between multiple devices.
