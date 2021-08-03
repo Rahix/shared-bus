@@ -8,9 +8,11 @@ on:
   pull_request:
 
 jobs:
-  ci:
-    name: "Build & Test"
+  stable-ci:
+    name: "Build & Test (on Stable Rust)"
     runs-on: ubuntu-latest
+    env:
+      STABLE_FEATURES: "cortex-m,std"
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -19,6 +21,28 @@ jobs:
         with:
           profile: minimal
           toolchain: stable
+          override: true
+      - name: Build shared-bus with all features enabled
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: "--features ${{ env.STABLE_FEATURES }}"
+      - name: Test shared-bus with all features enabled
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: "--features ${{ env.STABLE_FEATURES }}"
+  nightly-ci:
+    name: "Build & Test (on Nightly Rust)"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install Nightly Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
           override: true
       - name: Build shared-bus with all features enabled
         uses: actions-rs/cargo@v1
