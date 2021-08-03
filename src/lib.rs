@@ -85,6 +85,7 @@
 //! | --- | --- | --- | --- |
 //! | `std::sync::Mutex` | [`BusManagerStd`] | [`new_std!()`] | `std` |
 //! | `cortex_m::interrupt::Mutex` | [`BusManagerCortexM`] | [`new_cortexm!()`] | `cortex-m` |
+//! | `shared_bus::XtensaMutex` (`spin::Mutex` in critical section) | [`BusManagerXtensa`] | [`new_xtensa!()`] | `xtensa` |
 //! | None (Automatically Managed) | [`BusManagerAtomicCheck`] | [`new_atomic_check!()`] | `cortex-m` |
 //!
 //! # Supported Busses
@@ -99,6 +100,7 @@
 //! [`.acquire_i2c()`]: ./struct.BusManager.html#method.acquire_i2c
 //! [`.acquire_spi()`]: ./struct.BusManager.html#method.acquire_spi
 //! [`BusManagerCortexM`]: ./type.BusManagerCortexM.html
+//! [`BusManagerXtensa`]: ./type.BusManagerXtensa.html
 //! [`BusManagerAtomicCheck`]: ./type.BusManagerAtomicCheck.html
 //! [`BusManagerSimple`]: ./type.BusManagerSimple.html
 //! [`BusManagerStd`]: ./type.BusManagerStd.html
@@ -106,6 +108,7 @@
 //! [`I2cProxy`]: ./struct.I2cProxy.html
 //! [`SpiProxy`]: ./struct.SpiProxy.html
 //! [`new_cortexm!()`]: ./macro.new_cortexm.html
+//! [`new_xtensa!()`]: ./macro.new_xtensa.html
 //! [`new_std!()`]: ./macro.new_std.html
 //! [`new_atomic_check!()`]: ./macro.new_atomic_check.html
 //! [blog-post]: https://blog.rahix.de/001-shared-bus
@@ -126,11 +129,17 @@ pub use once_cell;
 #[cfg(feature = "cortex-m")]
 pub use cortex_m;
 
+#[doc(hidden)]
+#[cfg(feature = "xtensa")]
+pub use xtensa_lx6;
+
 pub use manager::BusManager;
 pub use mutex::BusMutex;
 #[cfg(feature = "cortex-m")]
 pub use mutex::CortexMMutex;
 pub use mutex::NullMutex;
+#[cfg(feature = "xtensa")]
+pub use mutex::XtensaMutex;
 pub use proxies::I2cProxy;
 pub use proxies::SpiProxy;
 
@@ -194,6 +203,19 @@ pub type BusManagerStd<BUS> = BusManager<::std::sync::Mutex<BUS>>;
 /// This type is only available with the `cortex-m` feature.
 #[cfg(feature = "cortex-m")]
 pub type BusManagerCortexM<BUS> = BusManager<CortexMMutex<BUS>>;
+
+/// A bus manager for safely sharing between tasks on Xtensa-lx6.
+///
+/// This manager works by turning off interrupts for each bus transaction which prevents racy
+/// accesses from different tasks/execution contexts (e.g. interrupts).  Usually, for sharing
+/// between tasks, a manager with `'static` lifetime is needed which can be created using the
+/// [`shared_bus::new_xtensa!()`][new_xtensa] macro.
+///
+/// [new_xtensa]: ./macro.new_xtensa.html
+///
+/// This type is only available with the `xtensa` feature.
+#[cfg(feature = "xtensa")]
+pub type BusManagerXtensa<BUS> = BusManager<XtensaMutex<BUS>>;
 
 /// A bus manager for safely sharing the bus when using concurrency frameworks (such as RTIC).
 ///

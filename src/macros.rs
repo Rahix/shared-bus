@@ -133,6 +133,33 @@ macro_rules! new_cortexm {
     }};
 }
 
+/// Macro for creating a Xtensa-lx6 bus manager with `'static` lifetime.
+///
+/// This macro is a convenience helper for creating a bus manager that lives for the `'static`
+/// lifetime an thus can be safely shared across tasks/execution contexts (like interrupts).
+///
+/// This macro is only available with the `xtensa` feature.
+///
+/// # Syntax
+/// ```ignore
+/// let bus = shared_bus::new_xtensa!(<Full Bus Type Signature> = <bus>).unwrap();
+/// ```
+///
+/// The macro returns an Option which will be `Some(&'static bus_manager)` on the first run and
+/// `None` afterwards.  This is necessary to uphold safety around the inner `static` variable.
+#[cfg(feature = "xtensa")]
+#[macro_export]
+macro_rules! new_xtensa {
+    ($bus_type:ty = $bus:expr) => {{
+        let m: Option<&'static mut _> = $crate::xtensa_lx6::singleton!(
+            : $crate::BusManagerXtensa<$bus_type> =
+                $crate::BusManagerXtensa::new($bus)
+        );
+
+        m
+    }};
+}
+
 /// Construct a statically allocated bus manager.
 #[cfg(feature = "cortex-m")]
 #[macro_export]
