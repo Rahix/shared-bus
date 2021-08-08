@@ -130,6 +130,31 @@ impl<M: crate::BusMutex> BusManager<M> {
     pub fn acquire_i2c<'a>(&'a self) -> crate::I2cProxy<'a, M> {
         crate::I2cProxy { mutex: &self.mutex }
     }
+
+    /// Acquire an [`AdcProxy`] for this hardware block.
+    ///
+    /// [`AdcProxy`]: ./struct.AdcProxy.html
+    ///
+    /// The returned proxy object can then be used for accessing the bus by e.g. a driver:
+    ///
+    /// ```ignore
+    /// // For example:
+    /// // let ch0 = gpioa.pa0.into_analog(&mut gpioa.crl);
+    /// // let ch1 = gpioa.pa1.into_analog(&mut gpioa.crl);
+    /// // let adc = Adc::adc1(p.ADC1, &mut rcc.apb2, clocks);
+    ///
+    /// let adc_bus: &'static _ = shared_bus::new_cortexm!(Adc<ADC1> = adc).unwrap();
+    /// let mut proxy1 = adc_bus.acquire_adc();
+    /// let mut proxy2 = adc_bus.acquire_adc();
+    ///
+    /// proxy1.read(ch0).unwrap();
+    /// proxy2.read(ch1).unwrap();
+    ///
+    /// ```
+
+    pub fn acquire_adc<'a>(&'a self) -> crate::AdcProxy<'a, M> {
+        crate::AdcProxy { mutex: &self.mutex }
+    }
 }
 
 impl<T> BusManager<crate::NullMutex<T>> {
