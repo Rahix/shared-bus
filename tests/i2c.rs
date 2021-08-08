@@ -12,9 +12,7 @@ fn fake_i2c_device() {
 
 #[test]
 fn i2c_manager_manual() {
-    let expect = vec![
-        i2c::Transaction::write(0xde, vec![0xad, 0xbe, 0xef]),
-    ];
+    let expect = vec![i2c::Transaction::write(0xde, vec![0xad, 0xbe, 0xef])];
     let mut device = i2c::Mock::new(&expect);
     let manager = shared_bus::BusManagerSimple::new(device.clone());
     let mut proxy = manager.acquire_i2c();
@@ -26,9 +24,7 @@ fn i2c_manager_manual() {
 
 #[test]
 fn i2c_manager_macro() {
-    let expect = vec![
-        i2c::Transaction::write(0xde, vec![0xad, 0xbe, 0xef]),
-    ];
+    let expect = vec![i2c::Transaction::write(0xde, vec![0xad, 0xbe, 0xef])];
     let mut device = i2c::Mock::new(&expect);
     let manager: &'static shared_bus::BusManagerStd<_> =
         shared_bus::new_std!(i2c::Mock = device.clone()).unwrap();
@@ -105,13 +101,17 @@ fn i2c_concurrent() {
 
     thread::spawn(move || {
         proxy1.write(0xde, &[0xad, 0xbe, 0xef]).unwrap();
-    }).join().unwrap();
+    })
+    .join()
+    .unwrap();
 
     thread::spawn(move || {
         let mut buf = [0u8; 3];
         proxy2.read(0xef, &mut buf).unwrap();
         assert_eq!(&buf, &[0xbe, 0xad, 0xde]);
-    }).join().unwrap();
+    })
+    .join()
+    .unwrap();
 
     device.done();
 }

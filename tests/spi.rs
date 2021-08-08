@@ -11,9 +11,7 @@ fn fake_spi_device() {
 
 #[test]
 fn spi_manager_manual() {
-    let expect = vec![
-        spi::Transaction::write(vec![0xab, 0xcd, 0xef]),
-    ];
+    let expect = vec![spi::Transaction::write(vec![0xab, 0xcd, 0xef])];
     let mut device = spi::Mock::new(&expect);
     let manager = shared_bus::BusManagerSimple::new(device.clone());
     let mut proxy = manager.acquire_spi();

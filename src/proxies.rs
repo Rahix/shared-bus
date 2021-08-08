@@ -17,9 +17,7 @@ pub struct I2cProxy<'a, M> {
 
 impl<'a, M: crate::BusMutex> Clone for I2cProxy<'a, M> {
     fn clone(&self) -> Self {
-        Self {
-            mutex: &self.mutex,
-        }
+        Self { mutex: &self.mutex }
     }
 }
 
@@ -57,11 +55,10 @@ where
         buffer_in: &[u8],
         buffer_out: &mut [u8],
     ) -> Result<(), Self::Error> {
-        self.mutex.lock(|bus| bus.write_read(addr, buffer_in, buffer_out))
+        self.mutex
+            .lock(|bus| bus.write_read(addr, buffer_in, buffer_out))
     }
 }
-
-
 
 /// Proxy type for SPI bus sharing.
 ///
