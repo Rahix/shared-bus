@@ -118,6 +118,14 @@ where
 ///
 /// An `AdcProxy` is created by calling [`BusManager::acquire_adc()`][acquire_adc].
 ///
+/// **Note**: The [`adc::OneShot`] trait proxied by this type describes a
+/// non-blocking contract for ADC read operation.  However access to a shared ADC
+/// unit can not be arbitrated in a completely non-blocking and concurrency safe way.
+/// Any reading from a channel shall be completed before `shared-bus` can allow the
+/// next read from the same or another channel. So the current implementation breaks
+/// the non-blocking contract of the trait and just busy-spins until a sample is
+/// returned.
+///
 /// [acquire_adc]: ./struct.BusManager.html#method.acquire_adc
 #[derive(Debug)]
 pub struct AdcProxy<'a, M> {
@@ -137,16 +145,6 @@ where
 {
     type Error = <M::Bus as adc::OneShot<ADC, Word, Pin>>::Error;
 
-    /// `OneShot` trait describes a non-blocking contract for ADC read operation.
-    /// However access to shared ADC unit can not be arbitrated in a completely
-    /// non-blocking and concurrent way. Any reading from a channel shall be
-    /// completed before `shared-bus` can allow  next reading from the same or
-    /// another channel. So current implementation breaks the non-blocking
-    /// contract of the trait and just busy-spins until a sample is returned.
-    ///
-    /// Apparently this is kind of a hack. One possible better approach would
-    /// be to change `embedded-hal` to have an explicitly blocking `OneShot` trait
-    /// instead and then make `shared-bus` work on top of that.
     fn read(&mut self, pin: &mut Pin) -> nb::Result<Word, Self::Error> {
         self.mutex
             .lock(|bus| nb::block!(bus.read(pin)).map_err(nb::Error::Other))
