@@ -32,8 +32,8 @@
 //!
 //! let bus = shared_bus::BusManagerSimple::new(i2c);
 //!
-//! let mut proxy1 = bus.acquire_i2c();
-//! let mut my_device = MyDevice::new(bus.acquire_i2c());
+//! let mut proxy1 = bus.acquire();
+//! let mut my_device = MyDevice::new(bus.acquire());
 //!
 //! proxy1.write(0x39, &[0xc0, 0xff, 0xee]);
 //! my_device.do_something_on_the_bus();
@@ -67,8 +67,8 @@
 //! // shared with other threads.
 //! let bus: &'static _ = shared_bus::new_std!(SomeI2cBus = i2c).unwrap();
 //!
-//! let mut proxy1 = bus.acquire_i2c();
-//! let mut my_device = MyDevice::new(bus.acquire_i2c());
+//! let mut proxy1 = bus.acquire();
+//! let mut my_device = MyDevice::new(bus.acquire());
 //!
 //! // We can easily move a proxy to another thread:
 //! # let t =
@@ -143,8 +143,7 @@ pub use mutex::CortexMMutex;
 pub use mutex::NullMutex;
 #[cfg(feature = "xtensa")]
 pub use mutex::XtensaMutex;
-pub use proxies::AdcProxy;
-pub use proxies::I2cProxy;
+pub use proxies::Proxy;
 pub use proxies::SpiProxy;
 
 #[cfg(feature = "cortex-m")]
@@ -174,8 +173,8 @@ pub use mutex::AtomicCheckMutex;
 ///
 /// let bus = shared_bus::BusManagerSimple::new(i2c);
 ///
-/// let mut proxy1 = bus.acquire_i2c();
-/// let mut my_device = MyDevice::new(bus.acquire_i2c());
+/// let mut proxy1 = bus.acquire();
+/// let mut my_device = MyDevice::new(bus.acquire());
 ///
 /// proxy1.write(0x39, &[0xc0, 0xff, 0xee]);
 /// my_device.do_something_on_the_bus();

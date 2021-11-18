@@ -30,8 +30,8 @@
 /// // shared with other threads.
 /// let bus: &'static _ = shared_bus::new_std!(SomeI2cBus = i2c).unwrap();
 ///
-/// let mut proxy1 = bus.acquire_i2c();
-/// let mut my_device = MyDevice::new(bus.acquire_i2c());
+/// let mut proxy1 = bus.acquire();
+/// let mut my_device = MyDevice::new(bus.acquire());
 ///
 /// // We can easily move a proxy to another thread:
 /// # let t =

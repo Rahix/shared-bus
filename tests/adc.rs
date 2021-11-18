@@ -27,7 +27,7 @@ fn adc_manager_simple() {
 
     let mut device = adc::Mock::new(&expectations);
     let manager = shared_bus::BusManagerSimple::new(device.clone());
-    let mut proxy = manager.acquire_adc();
+    let mut proxy = manager.acquire();
 
     assert_eq!(0xabcd, proxy.read(&mut adc::MockChan0).unwrap());
     assert_eq!(0xabba, proxy.read(&mut adc::MockChan1).unwrap());
@@ -46,7 +46,7 @@ fn adc_manager_std() {
     let mut device = adc::Mock::new(&expectations);
     let manager: &'static shared_bus::BusManagerStd<_> =
         shared_bus::new_std!(adc::Mock<u16> = device.clone()).unwrap();
-    let mut proxy = manager.acquire_adc();
+    let mut proxy = manager.acquire();
 
     assert_eq!(0xabcd, proxy.read(&mut adc::MockChan0).unwrap());
     assert_eq!(0xabba, proxy.read(&mut adc::MockChan1).unwrap());
@@ -64,9 +64,9 @@ fn adc_proxy_multi() {
 
     let mut device = adc::Mock::new(&expectations);
     let manager = shared_bus::BusManagerSimple::new(device.clone());
-    let mut proxy1 = manager.acquire_adc();
-    let mut proxy2 = manager.acquire_adc();
-    let mut proxy3 = manager.acquire_adc();
+    let mut proxy1 = manager.acquire();
+    let mut proxy2 = manager.acquire();
+    let mut proxy3 = manager.acquire();
 
     assert_eq!(0xabcd, proxy1.read(&mut adc::MockChan0).unwrap());
     assert_eq!(0xabba, proxy2.read(&mut adc::MockChan1).unwrap());
@@ -85,9 +85,9 @@ fn adc_proxy_concurrent() {
     let mut device = adc::Mock::new(&expectations);
     let manager: &'static shared_bus::BusManagerStd<_> =
         shared_bus::new_std!(adc::Mock<u32> = device.clone()).unwrap();
-    let mut proxy1 = manager.acquire_adc();
-    let mut proxy2 = manager.acquire_adc();
-    let mut proxy3 = manager.acquire_adc();
+    let mut proxy1 = manager.acquire();
+    let mut proxy2 = manager.acquire();
+    let mut proxy3 = manager.acquire();
 
     thread::spawn(move || {
         assert_eq!(0xabcd, proxy1.read(&mut adc::MockChan0).unwrap());

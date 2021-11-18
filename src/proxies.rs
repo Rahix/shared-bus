@@ -12,17 +12,17 @@ use embedded_hal::blocking::spi;
 ///
 /// [acquire_i2c]: ./struct.BusManager.html#method.acquire_i2c
 #[derive(Debug)]
-pub struct I2cProxy<'a, M> {
+pub struct Proxy<'a, M> {
     pub(crate) mutex: &'a M,
 }
 
-impl<'a, M: crate::BusMutex> Clone for I2cProxy<'a, M> {
+impl<'a, M: crate::BusMutex> Clone for Proxy<'a, M> {
     fn clone(&self) -> Self {
         Self { mutex: &self.mutex }
     }
 }
 
-impl<'a, M: crate::BusMutex> i2c::Write for I2cProxy<'a, M>
+impl<'a, M: crate::BusMutex> i2c::Write for Proxy<'a, M>
 where
     M::Bus: i2c::Write,
 {
@@ -33,7 +33,7 @@ where
     }
 }
 
-impl<'a, M: crate::BusMutex> i2c::Read for I2cProxy<'a, M>
+impl<'a, M: crate::BusMutex> i2c::Read for Proxy<'a, M>
 where
     M::Bus: i2c::Read,
 {
@@ -44,7 +44,7 @@ where
     }
 }
 
-impl<'a, M: crate::BusMutex> i2c::WriteRead for I2cProxy<'a, M>
+impl<'a, M: crate::BusMutex> i2c::WriteRead for Proxy<'a, M>
 where
     M::Bus: i2c::WriteRead,
 {
@@ -76,15 +76,11 @@ where
 #[derive(Debug)]
 pub struct SpiProxy<'a, M> {
     pub(crate) mutex: &'a M,
-    pub(crate) _u: core::marker::PhantomData<*mut ()>,
 }
 
 impl<'a, M: crate::BusMutex> Clone for SpiProxy<'a, M> {
     fn clone(&self) -> Self {
-        Self {
-            mutex: &self.mutex,
-            _u: core::marker::PhantomData,
-        }
+        Self { mutex: &self.mutex }
     }
 }
 
@@ -127,18 +123,8 @@ where
 /// returned.
 ///
 /// [acquire_adc]: ./struct.BusManager.html#method.acquire_adc
-#[derive(Debug)]
-pub struct AdcProxy<'a, M> {
-    pub(crate) mutex: &'a M,
-}
 
-impl<'a, M: crate::BusMutex> Clone for AdcProxy<'a, M> {
-    fn clone(&self) -> Self {
-        Self { mutex: &self.mutex }
-    }
-}
-
-impl<'a, M: crate::BusMutex, ADC, Word, Pin> adc::OneShot<ADC, Word, Pin> for AdcProxy<'a, M>
+impl<'a, M: crate::BusMutex, ADC, Word, Pin> adc::OneShot<ADC, Word, Pin> for Proxy<'a, M>
 where
     Pin: adc::Channel<ADC>,
     M::Bus: adc::OneShot<ADC, Word, Pin>,

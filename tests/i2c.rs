@@ -15,7 +15,7 @@ fn i2c_manager_manual() {
     let expect = vec![i2c::Transaction::write(0xde, vec![0xad, 0xbe, 0xef])];
     let mut device = i2c::Mock::new(&expect);
     let manager = shared_bus::BusManagerSimple::new(device.clone());
-    let mut proxy = manager.acquire_i2c();
+    let mut proxy = manager.acquire();
 
     proxy.write(0xde, &[0xad, 0xbe, 0xef]).unwrap();
 
@@ -28,7 +28,7 @@ fn i2c_manager_macro() {
     let mut device = i2c::Mock::new(&expect);
     let manager: &'static shared_bus::BusManagerStd<_> =
         shared_bus::new_std!(i2c::Mock = device.clone()).unwrap();
-    let mut proxy = manager.acquire_i2c();
+    let mut proxy = manager.acquire();
 
     proxy.write(0xde, &[0xad, 0xbe, 0xef]).unwrap();
 
@@ -45,7 +45,7 @@ fn i2c_proxy() {
     let mut device = i2c::Mock::new(&expect);
 
     let manager = shared_bus::BusManagerSimple::new(device.clone());
-    let mut proxy = manager.acquire_i2c();
+    let mut proxy = manager.acquire();
 
     proxy.write(0xde, &[0xad, 0xbe, 0xef]).unwrap();
 
@@ -70,9 +70,9 @@ fn i2c_multi() {
     let mut device = i2c::Mock::new(&expect);
 
     let manager = shared_bus::BusManagerSimple::new(device.clone());
-    let mut proxy1 = manager.acquire_i2c();
-    let mut proxy2 = manager.acquire_i2c();
-    let mut proxy3 = manager.acquire_i2c();
+    let mut proxy1 = manager.acquire();
+    let mut proxy2 = manager.acquire();
+    let mut proxy3 = manager.acquire();
 
     proxy1.write(0xde, &[0xad, 0xbe, 0xef]).unwrap();
 
@@ -96,8 +96,8 @@ fn i2c_concurrent() {
     let mut device = i2c::Mock::new(&expect);
 
     let manager = shared_bus::new_std!(i2c::Mock = device.clone()).unwrap();
-    let mut proxy1 = manager.acquire_i2c();
-    let mut proxy2 = manager.acquire_i2c();
+    let mut proxy1 = manager.acquire();
+    let mut proxy2 = manager.acquire();
 
     thread::spawn(move || {
         proxy1.write(0xde, &[0xad, 0xbe, 0xef]).unwrap();
