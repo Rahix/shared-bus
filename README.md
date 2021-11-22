@@ -24,8 +24,8 @@ let i2c = I2c::i2c1(dp.I2C1, (scl, sda), 90.khz(), clocks, &mut rcc.apb1);
 
 let bus = shared_bus::BusManagerSimple::new(i2c);
 
-let mut proxy1 = bus.acquire_i2c();
-let mut my_device = MyDevice::new(bus.acquire_i2c());
+let mut proxy1 = bus.acquire();
+let mut my_device = MyDevice::new(bus.acquire());
 
 proxy1.write(0x39, &[0xc0, 0xff, 0xee]);
 my_device.do_something_on_the_bus();
@@ -50,8 +50,8 @@ let i2c = I2c::i2c1(dp.I2C1, (scl, sda), 90.khz(), clocks, &mut rcc.apb1);
 // shared with other threads.
 let bus: &'static _ = shared_bus::new_std!(SomeI2cBus = i2c).unwrap();
 
-let mut proxy1 = bus.acquire_i2c();
-let mut my_device = MyDevice::new(bus.acquire_i2c());
+let mut proxy1 = bus.acquire();
+let mut my_device = MyDevice::new(bus.acquire());
 
 // We can easily move a proxy to another thread:
 # let t =
@@ -75,18 +75,19 @@ Currently, the following busses can be shared with _shared-bus_:
 
 | Bus | Proxy Type | Acquire Method | Comments |
 | --- | --- | --- | --- |
-| I2C | [`I2cProxy`] | [`.acquire_i2c()`] | |
+| I2C | [`Proxy`] | [`.acquire()`] | |
+| ADC | [`Proxy`] | [`.acquire()`] | |
 | SPI | [`SpiProxy`] | [`.acquire_spi()`] | SPI can only be shared within a single task (See [`SpiProxy`] for details). |
 
 
-[`.acquire_i2c()`]: https://docs.rs/shared-bus/latest/shared_bus/struct.BusManager.html#method.acquire_i2c
+[`.acquire()`]: https://docs.rs/shared-bus/latest/shared_bus/struct.BusManager.html#method.acquire
 [`.acquire_spi()`]: https://docs.rs/shared-bus/latest/shared_bus/struct.BusManager.html#method.acquire_spi
 [`BusManagerCortexM`]: https://docs.rs/shared-bus/latest/shared_bus/type.BusManagerCortexM.html
 [`BusManagerSimple`]: https://docs.rs/shared-bus/latest/shared_bus/type.BusManagerSimple.html
 [`BusManagerAtomicCheck`]: https://docs.rs/shared-bus/latest/shared_bus/type.BusManagerAtomicCheck.html
 [`BusManagerStd`]: https://docs.rs/shared-bus/latest/shared_bus/type.BusManagerStd.html
 [`BusMutex`]: https://docs.rs/shared-bus/latest/shared_bus/trait.BusMutex.html
-[`I2cProxy`]: https://docs.rs/shared-bus/latest/shared_bus/struct.I2cProxy.html
+[`Proxy`]: https://docs.rs/shared-bus/latest/shared_bus/struct.Proxy.html
 [`SpiProxy`]: https://docs.rs/shared-bus/latest/shared_bus/struct.SpiProxy.html
 [`new_cortexm!()`]: https://docs.rs/shared-bus/latest/shared_bus/macro.new_cortexm.html
 [`new_atomic_check!()`]: https://docs.rs/shared-bus/latest/shared_bus/macro.new_atomic_check.html

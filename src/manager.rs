@@ -100,12 +100,13 @@ impl<M: crate::BusMutex> BusManager<M> {
 }
 
 impl<M: crate::BusMutex> BusManager<M> {
-    /// Acquire an [`I2cProxy`] for this bus.
+    /// Acquire a [`Proxy`] for this bus.
     ///
-    /// [`I2cProxy`]: ./struct.I2cProxy.html
+    /// [`Proxy`]: ./struct.Proxy.html
     ///
-    /// The returned proxy object can then be used for accessing the bus by e.g. a driver:
+    /// The returned proxy object can then be used for accessing the bus/ADC by e.g. a driver:
     ///
+    /// I2C:
     /// ```
     /// # use embedded_hal::blocking::i2c;
     /// # use embedded_hal::blocking::i2c::Write as _;
@@ -127,16 +128,8 @@ impl<M: crate::BusMutex> BusManager<M> {
     /// my_device.do_something_on_the_bus();
     /// # }
     /// ```
-    pub fn acquire<'a>(&'a self) -> crate::Proxy<'a, M> {
-        crate::Proxy { mutex: &self.mutex }
-    }
-
-    /// Acquire an [`AdcProxy`] for this hardware block.
-    ///
-    /// [`AdcProxy`]: ./struct.AdcProxy.html
-    ///
-    /// The returned proxy object can then be used for accessing the bus by e.g. a driver:
-    ///
+    /// 
+    /// ADC:
     /// ```ignore
     /// // For example:
     /// // let ch0 = gpioa.pa0.into_analog(&mut gpioa.crl);
@@ -144,16 +137,27 @@ impl<M: crate::BusMutex> BusManager<M> {
     /// // let adc = Adc::adc1(p.ADC1, &mut rcc.apb2, clocks);
     ///
     /// let adc_bus: &'static _ = shared_bus::new_cortexm!(Adc<ADC1> = adc).unwrap();
-    /// let mut proxy1 = adc_bus.acquire_adc();
-    /// let mut proxy2 = adc_bus.acquire_adc();
+    /// let mut proxy1 = adc_bus.acquire();
+    /// let mut proxy2 = adc_bus.acquire();
     ///
     /// proxy1.read(ch0).unwrap();
     /// proxy2.read(ch1).unwrap();
     ///
     /// ```
-
-    pub fn acquire_adc<'a>(&'a self) -> crate::Proxy<'a, M> {
+    pub fn acquire<'a>(&'a self) -> crate::Proxy<'a, M> {
         crate::Proxy { mutex: &self.mutex }
+    }
+
+    /// Fallback method alias to prevent breaking change
+    #[deprecated(since="0.2.3", note="please use the generic method `acquire` instead")]
+    pub fn acquire_i2c<'a>(&'a self) -> crate::Proxy<'a, M> {
+        self.acquire()
+    }
+
+    /// Fallback method alias to prevent breaking change
+    #[deprecated(since="0.2.3", note="please use the generic method `acquire` instead")]
+    pub fn acquire_adc<'a>(&'a self) -> crate::Proxy<'a, M> {
+        self.acquire()
     }
 }
 

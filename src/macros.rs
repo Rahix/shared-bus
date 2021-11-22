@@ -86,7 +86,7 @@ macro_rules! new_std {
 /// #     fn write(&mut self, addr: u8, buffer: &[u8]) -> Result<(), Self::Error> { Ok(()) }
 /// # }
 /// static mut SHARED_DEVICE:
-///     Option<MyDevice<shared_bus::I2cProxy<shared_bus::CortexMMutex<SomeI2cBus>>>>
+///     Option<MyDevice<shared_bus::Proxy<shared_bus::CortexMMutex<SomeI2cBus>>>>
 ///     = None;
 ///
 /// fn main() -> ! {
@@ -98,8 +98,8 @@ macro_rules! new_std {
 ///     // shared with other tasks.
 ///     let bus: &'static _ = shared_bus::new_cortexm!(SomeI2cBus = i2c).unwrap();
 ///
-///     let mut proxy1 = bus.acquire_i2c();
-///     let my_device = MyDevice::new(bus.acquire_i2c());
+///     let mut proxy1 = bus.acquire();
+///     let my_device = MyDevice::new(bus.acquire());
 ///
 ///     unsafe {
 ///         SHARED_DEVICE = Some(my_device);
