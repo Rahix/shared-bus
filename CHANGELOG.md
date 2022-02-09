@@ -9,9 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A mutex type for Xtensa LX6 micorontrollers (e.g. ESP32) ([#22]).
 - A proxy type for sharing an ADC to allow "concurrently" reading its channels
   from multiple tasks ([#24]).
+- Support for thumbv6 targets by using `atomic-polyfill` instead of libcore
+  atomics ([#30]).
 
 [#22]: https://github.com/rahix/shared-bus/pull/22
 [#24]: https://github.com/rahix/shared-bus/pull/24
+[#30]: https://github.com/rahix/shared-bus/pull/30
 
 
 ## [0.2.2] - 2021-04-20
