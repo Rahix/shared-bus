@@ -68,6 +68,7 @@ overview of what's already available:
 | --- | --- | --- | --- |
 | `std::sync::Mutex` | [`BusManagerStd`] | [`new_std!()`] | `std` |
 | `cortex_m::interrupt::Mutex` | [`BusManagerCortexM`] | [`new_cortexm!()`] | `cortex-m` |
+| `shared_bus::XtensaMutex` (`spin::Mutex` in critical section) | [`BusManagerXtensa`] | [`new_xtensa!()`] | `xtensa` |
 | NA | [`BusManagerAtomicCheck`] | [`new_atomic_check!()`] | `cortex-m` |
 
 # Supported Busses
@@ -77,19 +78,24 @@ Currently, the following busses can be shared with _shared-bus_:
 | --- | --- | --- | --- |
 | I2C | [`I2cProxy`] | [`.acquire_i2c()`] | |
 | SPI | [`SpiProxy`] | [`.acquire_spi()`] | SPI can only be shared within a single task (See [`SpiProxy`] for details). |
+| ADC | [`AdcProxy`] | [`.acquire_adc()`] | |
 
 
 [`.acquire_i2c()`]: https://docs.rs/shared-bus/latest/shared_bus/struct.BusManager.html#method.acquire_i2c
 [`.acquire_spi()`]: https://docs.rs/shared-bus/latest/shared_bus/struct.BusManager.html#method.acquire_spi
+[`.acquire_adc()`]: https://docs.rs/shared-bus/latest/shared_bus/struct.BusManager.html#method.acquire_adc
 [`BusManagerCortexM`]: https://docs.rs/shared-bus/latest/shared_bus/type.BusManagerCortexM.html
 [`BusManagerSimple`]: https://docs.rs/shared-bus/latest/shared_bus/type.BusManagerSimple.html
 [`BusManagerAtomicCheck`]: https://docs.rs/shared-bus/latest/shared_bus/type.BusManagerAtomicCheck.html
 [`BusManagerStd`]: https://docs.rs/shared-bus/latest/shared_bus/type.BusManagerStd.html
+[`BusManagerXtensa`]: https://docs.rs/shared-bus/latest/shared_bus/type.BusManagerXtensa.html
 [`BusMutex`]: https://docs.rs/shared-bus/latest/shared_bus/trait.BusMutex.html
 [`I2cProxy`]: https://docs.rs/shared-bus/latest/shared_bus/struct.I2cProxy.html
 [`SpiProxy`]: https://docs.rs/shared-bus/latest/shared_bus/struct.SpiProxy.html
+[`AdcProxy`]: https://docs.rs/shared-bus/latest/shared_bus/struct.AdcProxy.html
 [`new_cortexm!()`]: https://docs.rs/shared-bus/latest/shared_bus/macro.new_cortexm.html
 [`new_atomic_check!()`]: https://docs.rs/shared-bus/latest/shared_bus/macro.new_atomic_check.html
+[`new_xtensa!()`]: https://docs.rs/shared-bus/latest/shared_bus/macro.new_xtensa.html
 [`new_std!()`]: https://docs.rs/shared-bus/latest/shared_bus/macro.new_std.html
 [blog-post]: https://blog.rahix.de/001-shared-bus
 
