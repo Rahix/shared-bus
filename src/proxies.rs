@@ -1,3 +1,6 @@
+#[cfg(feature = "eh-alpha")]
+use embedded_hal_alpha::i2c as i2c_alpha;
+
 use embedded_hal::adc;
 use embedded_hal::blocking::i2c;
 use embedded_hal::blocking::spi;
@@ -88,6 +91,76 @@ pub type I2cProxy<'a, M> = Proxy<'a, M>;
 /// Fallback type alias to prevent breaking change
 #[deprecated(since="0.2.3", note="please use the generic `Proxy` instead")]
 pub type AdcProxy<'a, M> = Proxy<'a, M>;
+
+// Implementations for the embedded_hal alpha
+
+#[cfg(feature = "eh-alpha")]
+impl<'a, M: crate::BusMutex> i2c_alpha::ErrorType for Proxy<'a, M>
+where
+    M::Bus: i2c_alpha::ErrorType,
+{
+    type Error = <M::Bus as i2c_alpha::ErrorType>::Error;
+}
+
+#[cfg(feature = "eh-alpha")]
+impl<'a, M: crate::BusMutex> i2c_alpha::blocking::I2c for Proxy<'a, M>
+where
+    M::Bus: i2c_alpha::blocking::I2c,
+{
+    fn read(&mut self, address: u8, buffer: &mut [u8]) -> Result<(), Self::Error> {
+        self.mutex.lock(|bus| bus.read(address, buffer))
+    }
+
+    fn write(&mut self, address: u8, bytes: &[u8]) -> Result<(), Self::Error> {
+        self.mutex.lock(|bus| bus.write(address, bytes))
+    }
+
+    fn write_iter<B>(&mut self, address: u8, bytes: B) -> Result<(), Self::Error>
+    where
+        B: IntoIterator<Item = u8>,
+    {
+        self.mutex.lock(|bus| bus.write_iter(address, bytes))
+    }
+
+    fn write_read(
+        &mut self,
+        address: u8,
+        bytes: &[u8],
+        buffer: &mut [u8],
+    ) -> Result<(), Self::Error> {
+        self.mutex
+            .lock(|bus| bus.write_read(address, bytes, buffer))
+    }
+
+    fn write_iter_read<B>(
+        &mut self,
+        address: u8,
+        bytes: B,
+        buffer: &mut [u8],
+    ) -> Result<(), Self::Error>
+    where
+        B: IntoIterator<Item = u8>,
+    {
+        self.mutex
+            .lock(|bus| bus.write_iter_read(address, bytes, buffer))
+    }
+
+    fn transaction<'b>(
+        &mut self,
+        address: u8,
+        operations: &mut [i2c_alpha::blocking::Operation<'b>],
+    ) -> Result<(), Self::Error> {
+        self.mutex.lock(|bus| bus.transaction(address, operations))
+    }
+
+    fn transaction_iter<'b, O>(&mut self, address: u8, operations: O) -> Result<(), Self::Error>
+    where
+        O: IntoIterator<Item = i2c_alpha::blocking::Operation<'b>>,
+    {
+        self.mutex
+            .lock(|bus| bus.transaction_iter(address, operations))
+    }
+}
 
 /// Proxy type for SPI bus sharing.
 ///

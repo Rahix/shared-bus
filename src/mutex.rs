@@ -143,7 +143,7 @@ impl<T> BusMutex for XtensaMutex<T> {
     }
 
     fn lock<R, F: FnOnce(&mut Self::Bus) -> R>(&self, f: F) -> R {
-        xtensa_lx6::interrupt::free(|_| f(&mut (*self.0.lock())))
+        xtensa_lx::interrupt::free(|_| f(&mut (*self.0.lock())))
     }
 }
 
@@ -184,7 +184,7 @@ mod tests {
 #[derive(Debug)]
 pub struct AtomicCheckMutex<BUS> {
     bus: core::cell::UnsafeCell<BUS>,
-    busy: core::sync::atomic::AtomicBool,
+    busy: atomic_polyfill::AtomicBool,
 }
 
 // It is explicitly safe to share this across threads because there is a coherency check using an
@@ -199,7 +199,7 @@ impl<BUS> BusMutex for AtomicCheckMutex<BUS> {
     fn create(v: BUS) -> Self {
         Self {
             bus: core::cell::UnsafeCell::new(v),
-            busy: core::sync::atomic::AtomicBool::from(false),
+            busy: atomic_polyfill::AtomicBool::from(false),
         }
     }
 

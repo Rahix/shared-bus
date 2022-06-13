@@ -132,7 +132,7 @@ pub use cortex_m;
 
 #[doc(hidden)]
 #[cfg(feature = "xtensa")]
-pub use xtensa_lx6;
+pub use xtensa_lx;
 
 pub use manager::BusManager;
 pub use mutex::BusMutex;
