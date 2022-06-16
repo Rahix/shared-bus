@@ -41,8 +41,8 @@
 ///
 ///    let bus = shared_bus::BusManagerSimple::new(i2c);
 ///
-///    let mut proxy1 = bus.acquire_i2c();
-///    let mut my_device = MyDevice::new(bus.acquire_i2c());
+///    let mut proxy1 = bus.acquire();
+///    let mut my_device = MyDevice::new(bus.acquire());
 ///
 ///    proxy1.write(0x39, &[0xc0, 0xff, 0xee]);
 ///    my_device.do_something_on_the_bus();
@@ -69,8 +69,8 @@
 ///    // shared with other threads.
 ///    let bus: &'static _ = shared_bus::new_std!(SomeI2cBus = i2c).unwrap();
 ///
-///    let mut proxy1 = bus.acquire_i2c();
-///    let mut my_device = MyDevice::new(bus.acquire_i2c());
+///    let mut proxy1 = bus.acquire();
+///    let mut my_device = MyDevice::new(bus.acquire());
 ///
 ///    // We can easily move a proxy to another thread:
 ///    # let t =
@@ -100,12 +100,13 @@ impl<M: crate::BusMutex> BusManager<M> {
 }
 
 impl<M: crate::BusMutex> BusManager<M> {
-    /// Acquire an [`I2cProxy`] for this bus.
+    /// Acquire a [`Proxy`] for this bus.
     ///
-    /// [`I2cProxy`]: ./struct.I2cProxy.html
+    /// [`Proxy`]: ./struct.Proxy.html
     ///
-    /// The returned proxy object can then be used for accessing the bus by e.g. a driver:
+    /// The returned proxy object can then be used for accessing the bus/ADC by e.g. a driver:
     ///
+    /// I2C:
     /// ```
     /// # use embedded_hal::blocking::i2c;
     /// # use embedded_hal::blocking::i2c::Write as _;
@@ -120,23 +121,15 @@ impl<M: crate::BusMutex> BusManager<M> {
     /// # fn _example(i2c: impl i2c::Write) {
     /// let bus = shared_bus::BusManagerSimple::new(i2c);
     ///
-    /// let mut proxy1 = bus.acquire_i2c();
-    /// let mut my_device = MyDevice::new(bus.acquire_i2c());
+    /// let mut proxy1 = bus.acquire();
+    /// let mut my_device = MyDevice::new(bus.acquire());
     ///
     /// proxy1.write(0x39, &[0xc0, 0xff, 0xee]);
     /// my_device.do_something_on_the_bus();
     /// # }
     /// ```
-    pub fn acquire_i2c<'a>(&'a self) -> crate::I2cProxy<'a, M> {
-        crate::I2cProxy { mutex: &self.mutex }
-    }
-
-    /// Acquire an [`AdcProxy`] for this hardware block.
-    ///
-    /// [`AdcProxy`]: ./struct.AdcProxy.html
-    ///
-    /// The returned proxy object can then be used for accessing the bus by e.g. a driver:
-    ///
+    /// 
+    /// ADC:
     /// ```ignore
     /// // For example:
     /// // let ch0 = gpioa.pa0.into_analog(&mut gpioa.crl);
@@ -144,16 +137,27 @@ impl<M: crate::BusMutex> BusManager<M> {
     /// // let adc = Adc::adc1(p.ADC1, &mut rcc.apb2, clocks);
     ///
     /// let adc_bus: &'static _ = shared_bus::new_cortexm!(Adc<ADC1> = adc).unwrap();
-    /// let mut proxy1 = adc_bus.acquire_adc();
-    /// let mut proxy2 = adc_bus.acquire_adc();
+    /// let mut proxy1 = adc_bus.acquire();
+    /// let mut proxy2 = adc_bus.acquire();
     ///
     /// proxy1.read(ch0).unwrap();
     /// proxy2.read(ch1).unwrap();
     ///
     /// ```
+    pub fn acquire<'a>(&'a self) -> crate::Proxy<'a, M> {
+        crate::Proxy { mutex: &self.mutex }
+    }
 
-    pub fn acquire_adc<'a>(&'a self) -> crate::AdcProxy<'a, M> {
-        crate::AdcProxy { mutex: &self.mutex }
+    /// Fallback method alias to prevent breaking change
+    #[deprecated(since="0.2.3", note="please use the generic method `acquire` instead")]
+    pub fn acquire_i2c<'a>(&'a self) -> crate::Proxy<'a, M> {
+        self.acquire()
+    }
+
+    /// Fallback method alias to prevent breaking change
+    #[deprecated(since="0.2.3", note="please use the generic method `acquire` instead")]
+    pub fn acquire_adc<'a>(&'a self) -> crate::Proxy<'a, M> {
+        self.acquire()
     }
 }
 
@@ -198,7 +202,6 @@ impl<T> BusManager<crate::NullMutex<T>> {
     pub fn acquire_spi<'a>(&'a self) -> crate::SpiProxy<'a, crate::NullMutex<T>> {
         crate::SpiProxy {
             mutex: &self.mutex,
-            _u: core::marker::PhantomData,
         }
     }
 }

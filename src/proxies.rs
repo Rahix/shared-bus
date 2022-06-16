@@ -5,27 +5,35 @@ use embedded_hal::adc;
 use embedded_hal::blocking::i2c;
 use embedded_hal::blocking::spi;
 
-/// Proxy type for I2C bus sharing.
+/// Proxy type for I2C and ADC bus sharing.
 ///
-/// The `I2cProxy` implements all (blocking) I2C traits so it can be passed to drivers instead of
-/// the bus instance.  Internally, it holds reference to the bus via a mutex, ensuring that all
-/// accesses are strictly synchronized.
+/// The `Proxy` can implement all (blocking) I2C traits and the `adc::OneShot` trait so it can be
+/// passed to drivers instead of the bus/ADC instance.  Internally, it holds reference to the bus
+/// via a mutex, ensuring that all accesses are strictly synchronized.
 ///
-/// An `I2cProxy` is created by calling [`BusManager::acquire_i2c()`][acquire_i2c].
+/// A `Proxy` is created by calling [`BusManager::acquire()`][acquire].
 ///
-/// [acquire_i2c]: ./struct.BusManager.html#method.acquire_i2c
+/// **Note**: The [`adc::OneShot`] trait proxied by this type describes a
+/// non-blocking contract for ADC read operation.  However access to a shared ADC
+/// unit can not be arbitrated in a completely non-blocking and concurrency safe way.
+/// Any reading from a channel shall be completed before `shared-bus` can allow the
+/// next read from the same or another channel. So the current implementation breaks
+/// the non-blocking contract of the trait and just busy-spins until a sample is
+/// returned.
+///
+/// [acquire]: ./struct.BusManager.html#method.acquire
 #[derive(Debug)]
-pub struct I2cProxy<'a, M> {
+pub struct Proxy<'a, M> {
     pub(crate) mutex: &'a M,
 }
 
-impl<'a, M: crate::BusMutex> Clone for I2cProxy<'a, M> {
+impl<'a, M: crate::BusMutex> Clone for Proxy<'a, M> {
     fn clone(&self) -> Self {
         Self { mutex: &self.mutex }
     }
 }
 
-impl<'a, M: crate::BusMutex> i2c::Write for I2cProxy<'a, M>
+impl<'a, M: crate::BusMutex> i2c::Write for Proxy<'a, M>
 where
     M::Bus: i2c::Write,
 {
@@ -36,7 +44,7 @@ where
     }
 }
 
-impl<'a, M: crate::BusMutex> i2c::Read for I2cProxy<'a, M>
+impl<'a, M: crate::BusMutex> i2c::Read for Proxy<'a, M>
 where
     M::Bus: i2c::Read,
 {
@@ -47,7 +55,7 @@ where
     }
 }
 
-impl<'a, M: crate::BusMutex> i2c::WriteRead for I2cProxy<'a, M>
+impl<'a, M: crate::BusMutex> i2c::WriteRead for Proxy<'a, M>
 where
     M::Bus: i2c::WriteRead,
 {
@@ -64,10 +72,30 @@ where
     }
 }
 
+impl<'a, M: crate::BusMutex, ADC, Word, Pin> adc::OneShot<ADC, Word, Pin> for Proxy<'a, M>
+where
+    Pin: adc::Channel<ADC>,
+    M::Bus: adc::OneShot<ADC, Word, Pin>,
+{
+    type Error = <M::Bus as adc::OneShot<ADC, Word, Pin>>::Error;
+
+    fn read(&mut self, pin: &mut Pin) -> nb::Result<Word, Self::Error> {
+        self.mutex
+            .lock(|bus| nb::block!(bus.read(pin)).map_err(nb::Error::Other))
+    }
+}
+
+/// Fallback type alias to prevent breaking change
+#[deprecated(since="0.2.3", note="please use the generic `Proxy` instead")]
+pub type I2cProxy<'a, M> = Proxy<'a, M>;
+/// Fallback type alias to prevent breaking change
+#[deprecated(since="0.2.3", note="please use the generic `Proxy` instead")]
+pub type AdcProxy<'a, M> = Proxy<'a, M>;
+
 // Implementations for the embedded_hal alpha
 
 #[cfg(feature = "eh-alpha")]
-impl<'a, M: crate::BusMutex> i2c_alpha::ErrorType for I2cProxy<'a, M>
+impl<'a, M: crate::BusMutex> i2c_alpha::ErrorType for Proxy<'a, M>
 where
     M::Bus: i2c_alpha::ErrorType,
 {
@@ -75,7 +103,7 @@ where
 }
 
 #[cfg(feature = "eh-alpha")]
-impl<'a, M: crate::BusMutex> i2c_alpha::blocking::I2c for I2cProxy<'a, M>
+impl<'a, M: crate::BusMutex> i2c_alpha::blocking::I2c for Proxy<'a, M>
 where
     M::Bus: i2c_alpha::blocking::I2c,
 {
@@ -149,15 +177,11 @@ where
 #[derive(Debug)]
 pub struct SpiProxy<'a, M> {
     pub(crate) mutex: &'a M,
-    pub(crate) _u: core::marker::PhantomData<*mut ()>,
 }
 
 impl<'a, M: crate::BusMutex> Clone for SpiProxy<'a, M> {
     fn clone(&self) -> Self {
-        Self {
-            mutex: &self.mutex,
-            _u: core::marker::PhantomData,
-        }
+        Self { mutex: &self.mutex }
     }
 }
 
@@ -180,46 +204,5 @@ where
 
     fn write(&mut self, words: &[u8]) -> Result<(), Self::Error> {
         self.mutex.lock(|bus| bus.write(words))
-    }
-}
-
-/// Proxy type for ADC sharing.
-///
-/// The `AdcProxy` implements OneShot trait so it can be passed to drivers instead of
-/// ADC instance. Internally, it holds reference to the bus via a mutex, ensuring
-/// that all accesses are strictly synchronized.
-///
-/// An `AdcProxy` is created by calling [`BusManager::acquire_adc()`][acquire_adc].
-///
-/// **Note**: The [`adc::OneShot`] trait proxied by this type describes a
-/// non-blocking contract for ADC read operation.  However access to a shared ADC
-/// unit can not be arbitrated in a completely non-blocking and concurrency safe way.
-/// Any reading from a channel shall be completed before `shared-bus` can allow the
-/// next read from the same or another channel. So the current implementation breaks
-/// the non-blocking contract of the trait and just busy-spins until a sample is
-/// returned.
-///
-/// [acquire_adc]: ./struct.BusManager.html#method.acquire_adc
-#[derive(Debug)]
-pub struct AdcProxy<'a, M> {
-    pub(crate) mutex: &'a M,
-}
-
-impl<'a, M: crate::BusMutex> Clone for AdcProxy<'a, M> {
-    fn clone(&self) -> Self {
-        Self { mutex: &self.mutex }
-    }
-}
-
-impl<'a, M: crate::BusMutex, ADC, Word, Pin> adc::OneShot<ADC, Word, Pin> for AdcProxy<'a, M>
-where
-    Pin: adc::Channel<ADC>,
-    M::Bus: adc::OneShot<ADC, Word, Pin>,
-{
-    type Error = <M::Bus as adc::OneShot<ADC, Word, Pin>>::Error;
-
-    fn read(&mut self, pin: &mut Pin) -> nb::Result<Word, Self::Error> {
-        self.mutex
-            .lock(|bus| nb::block!(bus.read(pin)).map_err(nb::Error::Other))
     }
 }

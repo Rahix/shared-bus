@@ -27,10 +27,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   from multiple tasks ([#24]).
 - Support for thumbv6 targets by using `atomic-polyfill` instead of libcore
   atomics ([#30]).
+- I2cProxy and AdcProxy joined into single type Proxy ([#25])
 
 [#22]: https://github.com/rahix/shared-bus/pull/22
 [#24]: https://github.com/rahix/shared-bus/pull/24
 [#30]: https://github.com/rahix/shared-bus/pull/30
+[#25]: https://github.com/rahix/shared-bus/pull/25
 
 
 ## [0.2.2] - 2021-04-20
