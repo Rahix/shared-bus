@@ -75,9 +75,9 @@ where
 }
 
 #[cfg(feature = "eh-alpha")]
-impl<'a, M: crate::BusMutex> i2c_alpha::blocking::I2c for I2cProxy<'a, M>
+impl<'a, M: crate::BusMutex> i2c_alpha::I2c for I2cProxy<'a, M>
 where
-    M::Bus: i2c_alpha::blocking::I2c,
+    M::Bus: i2c_alpha::I2c,
 {
     fn read(&mut self, address: u8, buffer: &mut [u8]) -> Result<(), Self::Error> {
         self.mutex.lock(|bus| bus.read(address, buffer))
@@ -120,14 +120,14 @@ where
     fn transaction<'b>(
         &mut self,
         address: u8,
-        operations: &mut [i2c_alpha::blocking::Operation<'b>],
+        operations: &mut [i2c_alpha::Operation<'b>],
     ) -> Result<(), Self::Error> {
         self.mutex.lock(|bus| bus.transaction(address, operations))
     }
 
     fn transaction_iter<'b, O>(&mut self, address: u8, operations: O) -> Result<(), Self::Error>
     where
-        O: IntoIterator<Item = i2c_alpha::blocking::Operation<'b>>,
+        O: IntoIterator<Item = i2c_alpha::Operation<'b>>,
     {
         self.mutex
             .lock(|bus| bus.transaction_iter(address, operations))
