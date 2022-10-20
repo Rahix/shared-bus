@@ -151,7 +151,7 @@ macro_rules! new_cortexm {
 #[macro_export]
 macro_rules! new_xtensa {
     ($bus_type:ty = $bus:expr) => {{
-        let m: Option<&'static mut _> = $crate::xtensa_lx6::singleton!(
+        let m: Option<&'static mut _> = $crate::xtensa_lx::singleton!(
             : $crate::BusManagerXtensa<$bus_type> =
                 $crate::BusManagerXtensa::new($bus)
         );
