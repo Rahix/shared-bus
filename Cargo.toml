@@ -1,6 +1,6 @@
 [package]
 name = "shared-bus"
-version = "0.2.4"
+version = "0.2.5"
 authors = ["Rahix <rahix@rahix.de>"]
 edition = "2018"
 
