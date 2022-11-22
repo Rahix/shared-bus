@@ -5,6 +5,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Upgraded to embedded-hal alpha support to version 9.  Please pin your
+  dependency on `shared-bus` to an exact version (using `=0.#.#`) when you make
+  use of the `eh-alpha` feature flag ([#38]).
+
+### Fixed
+- Fixed the `new_xtensa!()` macro not compiling ([#40]).
+
+[#38]: https://github.com/Rahix/shared-bus/pull/38
+[#40]: https://github.com/Rahix/shared-bus/pull/40
 
 
 ## [0.2.4] - 2022-06-16
