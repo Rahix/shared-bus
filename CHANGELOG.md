@@ -6,8 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Changed
-- **BREAKING** Upgraded to cortex-m 0.7.
-- **BREAKING** Upgraded to atomci-polyfill 1.0.
+- **BREAKING** Upgraded to `cortex-m` 0.7.
+- **BREAKING** Upgraded to `atomic-polyfill` 1.0.
+- **BREAKING** Upgraded to `xtensa-lx` 0.8 ([#49]).
+
+[#49]: https://github.com/Rahix/shared-bus/pull/49
 
 
 ## [0.2.5] - 2022-11-23
