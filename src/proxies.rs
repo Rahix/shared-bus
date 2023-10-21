@@ -64,6 +64,40 @@ where
     }
 }
 
+impl<'a, M: crate::BusMutex> i2c::WriteIterRead for I2cProxy<'a, M>
+where
+    M::Bus: i2c::WriteIterRead,
+{
+    type Error = <M::Bus as i2c::WriteIterRead>::Error;
+
+    fn write_iter_read<B>(
+        &mut self,
+        address: u8,
+        bytes: B,
+        buffer: &mut [u8],
+    ) -> Result<(), Self::Error>
+    where
+        B: IntoIterator<Item = u8>,
+    {
+        self.mutex
+            .lock(|bus| bus.write_iter_read(address, bytes, buffer))
+    }
+}
+
+impl<'a, M: crate::BusMutex> i2c::WriteIter for I2cProxy<'a, M>
+where
+    M::Bus: i2c::WriteIter,
+{
+    type Error = <M::Bus as i2c::WriteIter>::Error;
+
+    fn write<B>(&mut self, address: u8, bytes: B) -> Result<(), Self::Error>
+    where
+        B: IntoIterator<Item = u8>,
+    {
+        self.mutex.lock(|bus| bus.write(address, bytes))
+    }
+}
+
 // Implementations for the embedded_hal alpha
 
 #[cfg(feature = "eh-alpha")]
