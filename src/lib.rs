@@ -143,7 +143,7 @@ pub use mutex::CortexMMutex;
 pub use mutex::NullMutex;
 #[cfg(feature = "xtensa")]
 pub use mutex::XtensaMutex;
-pub use proxies::AdcProxy;
+// pub use proxies::AdcProxy;
 pub use proxies::I2cProxy;
 pub use proxies::SpiProxy;
 
