@@ -16,7 +16,7 @@ license = "MIT OR Apache-2.0"
 all-features = true
 
 [dependencies]
-embedded-hal = { version = "0.2.3", features = ["unproven"] }
+embedded-hal = { version = "1.0.0", features = ["unproven"] }
 nb = "1.0.0"
 once_cell = { version = "1.4.0", optional = true }
 cortex-m = { version = "0.7.7", optional = true }
