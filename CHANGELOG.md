@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - XXX
+### Changed
+- **BREAKING** Replaced `atomic-polyfill` with `portable-atomic` ^1.6 ([#58]).
+
+[#58]: hhttps://github.com/Rahix/shared-bus/pull/58
+
 
 ## [0.3.1] - 2023-10-31
 ### Added
